@@ -19,10 +19,10 @@
         .page-content { display: none; width: 100%; height: 100%; overflow: hidden; }
         .page-content.active { display: flex; }
 
+        /* 3컬럼 레이아웃 */
         .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
         .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid var(--border); color: #555; }
         .list-container { flex: 1; overflow-y: auto; }
-        
         #col-group { flex: 0 0 170px; }
         #col-subject { flex: 0 0 230px; background: #fafafa; }
         #col-detail { flex: 1; border-right: none; background: #f8f9fa; display: flex; flex-direction: column; }
@@ -31,7 +31,7 @@
         .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 5px solid var(--primary); }
 
-        /* 상세 영역 상단 타이틀 (교과군/과목명 명시) */
+        /* 상세 정보 상단 */
         .detail-title-bar { display: none; background: #fff; padding: 15px 20px; border-bottom: 1px solid var(--border); align-items: center; gap: 10px; }
         .badge-group { background: #e8f0fe; color: var(--primary); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
         .subject-name-large { font-size: 1.2rem; font-weight: 800; color: #202124; }
@@ -41,12 +41,13 @@
         .info-label { font-size: 0.7rem; color: #999; font-weight: bold; }
         .info-value { font-size: 0.9rem; color: #333; font-weight: 600; }
         
+        /* 이미지 전용 뷰어 영역 */
         #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }
-        .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; }
-        .viewer-label { color: #ccc; font-size: 0.75rem; margin-bottom: 8px; text-align: center; }
-        .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .viewer-box iframe { width: 100%; height: 800px; border: none; background: white; }
-
+        .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; text-align: center; }
+        .viewer-label { color: #ccc; font-size: 0.75rem; margin-bottom: 8px; }
+        .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: block; margin: 0 auto; }
+        
+        /* 학기별 보기 */
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
         #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; align-content: start; }
         .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; min-height: 350px; }
@@ -59,7 +60,7 @@
 </head>
 <body>
 
-    <div id="loading"><b>데이터를 불러오는 중입니다...</b></div>
+    <div id="loading"><b>안내 이미지를 불러오는 중...</b></div>
 
     <header>
         <div class="logo" onclick="showPage('home')">안성여고 교육과정 박람회</div>
@@ -71,9 +72,10 @@
     </header>
 
     <main>
-        <section id="page-home" class="page-content active">
-            <h1 style="margin-top:100px;">2026 안성여고 교육과정 박람회</h1>
-            <button onclick="showPage('subject')" style="padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px;">박람회 입장하기</button>
+        <section id="page-home" class="page-content active" style="flex-direction: column; justify-content: center; align-items: center; background: white; text-align: center;">
+            <h1 style="font-size: 2rem;">2026 안성여고 교육과정 박람회</h1>
+            <p>모든 안내 자료는 이미지로 최적화되어 있습니다.</p>
+            <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px; font-weight:bold;">박람회 입장하기</button>
         </section>
 
         <section id="page-subject" class="page-content">
@@ -81,10 +83,9 @@
             <div class="column" id="col-subject"><div class="column-header">과목 선택</div><div id="subject-list" class="list-container"></div></div>
             <div class="column" id="col-detail">
                 <div id="detail-title-bar" class="detail-title-bar">
-                    <span id="v-badge-group" class="badge-group">교과군</span>
-                    <span id="v-subject-name" class="subject-name-large">과목명</span>
+                    <span id="v-badge-group" class="badge-group"></span>
+                    <span id="v-subject-name" class="subject-name-large"></span>
                 </div>
-
                 <div id="info-board" class="info-board">
                     <div class="info-item"><div class="info-label">학년</div><div id="v-grade"></div></div>
                     <div class="info-item"><div class="info-label">학기</div><div id="v-term"></div></div>
@@ -95,9 +96,9 @@
                     <div class="info-item" style="grid-column: span 2;"><div class="info-label">비고</div><div id="v-note"></div></div>
                 </div>
                 <div id="viewer-container">
-                    <div id="empty-msg" style="color:#aaa; margin-top:80px;">과목을 선택하면 안내자료가 나타납니다.</div>
-                    <div id="box-f1" class="viewer-box"><div class="viewer-label">[안내자료 1]</div><img id="img-f1"><iframe id="pdf-f1"></iframe></div>
-                    <div id="box-f2" class="viewer-box"><div class="viewer-label">[안내자료 2]</div><img id="img-f2"><iframe id="pdf-f2"></iframe></div>
+                    <div id="empty-msg" style="color:#aaa; margin-top:80px;">과목을 선택하면 안내 이미지가 나타납니다.</div>
+                    <div id="box-f1" class="viewer-box"><div class="viewer-label">[안내 이미지 1]</div><img id="img-f1" alt="안내자료 1"></div>
+                    <div id="box-f2" class="viewer-box"><div class="viewer-label">[안내 이미지 2]</div><img id="img-f2" alt="안내자료 2"></div>
                 </div>
             </div>
         </section>
@@ -158,11 +159,9 @@
             document.querySelectorAll('#subject-list .item').forEach(i => i.classList.remove('active'));
             if(el) el.classList.add('active');
 
-            // ✅ 타이틀 바 업데이트 및 노출
             document.getElementById('detail-title-bar').style.display = 'flex';
             document.getElementById('v-badge-group').innerText = s.gName;
             document.getElementById('v-subject-name').innerText = s.name;
-
             document.getElementById('empty-msg').style.display = 'none';
             document.getElementById('info-board').style.display = 'grid';
 
@@ -174,17 +173,16 @@
             document.getElementById('v-credit').innerText = s.credit || "-";
             document.getElementById('v-note').innerText = s.note || "-";
 
-            const setView = (file, boxI, imgI, pdfI) => {
-                const box = document.getElementById(boxI), img = document.getElementById(imgI), pdf = document.getElementById(pdfI);
+            // 📸 이미지 전용 셋업 (PDF 로직 제거)
+            const setImgViewer = (file, boxI, imgI) => {
+                const box = document.getElementById(boxI), img = document.getElementById(imgI);
                 if(file && file !== "-" && file !== "") {
                     box.style.display = 'block';
-                    const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(file);
-                    if(isImg) { img.src="jpgs/"+file; img.style.display='block'; pdf.style.display='none'; }
-                    else { pdf.src="jpgs/"+file; pdf.style.display='block'; img.style.display='none'; }
+                    img.src = "jpgs/" + file;
                 } else { box.style.display = 'none'; }
             };
-            setView(s.f1, 'box-f1', 'img-f1', 'pdf-f1');
-            setView(s.f2, 'box-f2', 'img-f2', 'pdf-f2');
+            setImgViewer(s.f1, 'box-f1', 'img-f1');
+            setImgViewer(s.f2, 'box-f2', 'img-f2');
             document.getElementById('viewer-container').scrollTop = 0;
         }
 
@@ -193,6 +191,7 @@
             document.getElementById('info-board').style.display = 'none';
             document.getElementById('empty-msg').style.display = 'block';
             document.querySelectorAll('.viewer-box').forEach(b => b.style.display = 'none');
+            document.querySelectorAll('.viewer-box img').forEach(img => img.src = "");
         }
 
         function renderTerm() {
