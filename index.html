@@ -81,7 +81,7 @@
 </head>
 <body>
 
-    <div id="loading"><b>데이터 구조를 정밀 분석 중입니다...</b></div>
+    <div id="loading"><b>데이터를 온전하게 불러오는 중입니다...</b></div>
 
     <header>
         <div class="logo" onclick="showPage('home')">안성여고 교육과정 박람회</div>
@@ -95,7 +95,6 @@
     <main id="main-container">
         <section id="page-home" class="page-content active" style="flex-direction: column; justify-content: center; align-items: center; background: white; text-align: center; padding: 40px;">
             <h1 style="font-size: 1.8rem; margin-bottom: 10px;">2026 안성여고 교육과정 박람회</h1>
-            <p style="color: #666;">교과군과 과목을 정확하게 분류하여 안내합니다.</p>
             <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px; font-weight:bold;">입장하기</button>
         </section>
 
@@ -147,19 +146,31 @@
             try {
                 const res = await fetch(CSV_URL);
                 const text = await res.text();
-                // 🛠️ 빈 줄과 오동작 방지를 위한 더 엄격한 줄바꿈 필터링
                 const rows = text.split(/\r?\n/).filter(r => r.trim() !== "");
                 const grouped = {};
 
                 rows.slice(1).forEach(row => {
-                    // 🛠️ CSV 정규식 강화: 셀 안의 쉼표가 데이터 분리에 영향을 주지 않도록 함
-                    const c = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || row.split(',').map(v => v.trim());
-                    const cleanC = c.map(v => v.replace(/^"|"$/g, "").trim());
+                    // 🛠️ 파싱 로직 대폭 강화: 셀 내부의 공백과 쉼표를 정확히 처리하는 함수
+                    const parseCSVRow = (str) => {
+                        const result = [];
+                        let current = "";
+                        let inQuotes = false;
+                        for (let char of str) {
+                            if (char === '"') inQuotes = !inQuotes;
+                            else if (char === ',' && !inQuotes) {
+                                result.push(current.trim());
+                                current = "";
+                            } else current += char;
+                        }
+                        result.push(current.trim());
+                        return result;
+                    };
 
+                    const cleanC = parseCSVRow(row);
                     if (cleanC.length < 2) return;
                     
-                    const gName = cleanC[0]; // A열: 교과군 (예: 과학)
-                    const sName = cleanC[1]; // B열: 과목명 (예: 행성우주과학)
+                    const gName = cleanC[0]; 
+                    const sName = cleanC[1]; // "언어생활 탐구"가 잘리지 않음
                     
                     if(!gName || !sName) return;
 
@@ -175,7 +186,7 @@
                 db = Object.values(grouped);
                 if(db.length > 0) renderGroups();
                 document.getElementById('loading').style.display = 'none';
-            } catch (e) { console.error("데이터 초기화 에러:", e); }
+            } catch (e) { console.error(e); }
         }
 
         function renderGroups() {
