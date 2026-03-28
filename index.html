@@ -9,7 +9,6 @@
         * { box-sizing: border-box; }
         body { font-family: 'Pretendard', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
 
-        /* 헤더 */
         header { background: var(--primary); color: white; padding: 10px 15px 0 15px; flex-shrink: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo { font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; cursor: pointer; }
         .nav-tabs { display: flex; gap: 5px; list-style: none; margin: 0; padding: 0; }
@@ -20,7 +19,6 @@
         .page-content { display: none; width: 100%; height: 100%; overflow: hidden; }
         .page-content.active { display: flex; }
 
-        /* 교과별 보기 3컬럼 레이아웃 */
         .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
         .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid var(--border); color: #555; }
         .list-container { flex: 1; overflow-y: auto; }
@@ -32,20 +30,17 @@
         .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 5px solid var(--primary); }
 
-        /* 상세 정보 보드 (E열 ~ K열) */
         .info-board { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; background: white; border-bottom: 1px solid var(--border); }
         .info-item { display: flex; flex-direction: column; gap: 3px; border-left: 2px solid #eee; padding-left: 10px; }
         .info-label { font-size: 0.7rem; color: #999; font-weight: bold; }
         .info-value { font-size: 0.9rem; color: #333; font-weight: 600; }
         
-        /* 뷰어 영역 (C, D열 파일) */
         #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }
         .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; }
         .viewer-label { color: #ccc; font-size: 0.75rem; margin-bottom: 8px; text-align: center; }
         .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .viewer-box iframe { width: 100%; height: 800px; border: none; background: white; }
 
-        /* 학기별 보기 그리드 */
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
         #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; align-content: start; }
         .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; min-height: 350px; }
@@ -101,7 +96,9 @@
     </main>
 
     <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsBI-I1tIcnT0nuNa9BFcLaMzes4mIxE22VPLMGI0dFREjuifC-kvBYtNlpHaUyMCKCEHeTkwtRAKN/pubhtml?gid=0&single=true";
+        // 🔗 수정한 부분: pubhtml을 CSV 출력용 URL로 변경했습니다.
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsBI-I1tIcnT0nuNa9BFcLaMzes4mIxE22VPLMGI0dFREjuifC-kvBYtNlpHaUyMCKCEHeTkwtRAKN/pub?gid=0&single=true&output=csv";
+        
         let db = [];
         let curGIdx = null;
 
@@ -116,18 +113,26 @@
         async function init() {
             try {
                 const res = await fetch(CSV_URL);
+                if (!res.ok) throw new Error("네트워크 응답 오류");
                 const text = await res.text();
+                
+                // 줄바꿈 기준으로 나누고 빈 줄 제거
                 const rows = text.split(/\r?\n/).filter(r => r.trim() !== "");
                 const grouped = {};
 
+                // 헤더(첫 번째 행) 제외하고 데이터 처리
                 rows.slice(1).forEach(row => {
+                    // 쉼표로 구분하되, 따옴표 안의 쉼표는 무시하는 정규식
                     const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, "").trim());
-                    if (c.length < 6) return;
+                    
+                    if (c.length < 2) return; // 데이터가 부족하면 무시
                     
                     const gName = c[0]; // A열: 교과군
+                    if(!gName) return;
+
                     if(!grouped[gName]) grouped[gName] = { name: gName, subjects: [] };
                     grouped[gName].subjects.push({
-                        name: c[1],   // B열: 과목명
+                        name: c[1] || "이름 없음", // B열: 과목명
                         f1: c[2],     // C열: 파일1
                         f2: c[3],     // D열: 파일2
                         grade: c[4],  // E열: 학년
@@ -140,21 +145,33 @@
                         gName: gName
                     });
                 });
+
                 db = Object.values(grouped);
-                renderGroups();
+                if (db.length > 0) {
+                    renderGroups();
+                } else {
+                    console.warn("표시할 데이터가 없습니다.");
+                }
                 document.getElementById('loading').style.display = 'none';
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error("데이터 초기화 실패:", e);
+                document.getElementById('loading').innerHTML = "<b>데이터를 불러오지 못했습니다.</b><br>시트 설정을 확인해주세요.";
+            }
         }
 
         function renderGroups() {
-            document.getElementById('group-list').innerHTML = db.map((g, i) => `<div class="item ${curGIdx===i?'active':''}" onclick="selectGroup(${i})">${g.name}<span>❯</span></div>`).join('');
+            document.getElementById('group-list').innerHTML = db.map((g, i) => 
+                `<div class="item ${curGIdx===i?'active':''}" onclick="selectGroup(${i})">${g.name}<span>❯</span></div>`
+            ).join('');
         }
 
         function selectGroup(i) {
             curGIdx = i;
             renderGroups();
             resetDetail();
-            document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => `<div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`).join('');
+            document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => 
+                `<div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`
+            ).join('');
         }
 
         function selectSubject(s, el) {
@@ -164,7 +181,6 @@
             document.getElementById('empty-msg').style.display = 'none';
             document.getElementById('info-board').style.display = 'grid';
 
-            // E~K열 데이터 매칭
             document.getElementById('v-grade').innerText = s.grade || "-";
             document.getElementById('v-term').innerText = s.term || "-";
             document.getElementById('v-entry').innerText = s.entry || "-";
@@ -178,8 +194,15 @@
                 if(file && file !== "-" && file !== "") {
                     box.style.display = 'block';
                     const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(file);
-                    if(isImg) { img.src="jpgs/"+file; img.style.display='block'; pdf.style.display='none'; }
-                    else { pdf.src="jpgs/"+file; pdf.style.display='block'; img.style.display='none'; }
+                    if(isImg) { 
+                        img.src = "jpgs/" + file; 
+                        img.style.display = 'block'; 
+                        pdf.style.display = 'none'; 
+                    } else { 
+                        pdf.src = "jpgs/" + file; 
+                        pdf.style.display = 'block'; 
+                        img.style.display = 'none'; 
+                    }
                 } else { box.style.display = 'none'; }
             };
             setView(s.f1, 'box-f1', 'img-f1', 'pdf-f1');
