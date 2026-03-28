@@ -9,9 +9,11 @@
             --primary: #1a73e8; 
             --bg: #f8f9fa; 
             --border: #e0e0e0; 
-            /* 학년별 전용 색상 정의 */
-            --grade2-color: #1a73e8; /* 2학년: 파란색 */
-            --grade3-color: #34a853; /* 3학년: 초록색 */
+            /* 학년별 전용 색상 및 파스텔 배경 정의 */
+            --grade2-main: #1a73e8; 
+            --grade2-bg: #e8f0fe; /* 연한 파란 파스텔 */
+            --grade3-main: #34a853; 
+            --grade3-bg: #e6f4ea; /* 연한 초록 파스텔 */
         }
         
         html { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -40,31 +42,38 @@
         .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 5px solid var(--primary); }
 
-        /* 상세 영역 타이틀 바 & 뱃지 색상 대응 */
+        /* 상세 영역 타이틀 바 */
         .detail-title-bar { display: none; background: #fff; padding: 15px 20px; border-bottom: 1px solid var(--border); align-items: center; gap: 10px; }
         .badge-group { color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: #666; }
-        .badge-2 { background: var(--grade2-color) !important; }
-        .badge-3 { background: var(--grade3-color) !important; }
+        .badge-2 { background: var(--grade2-main) !important; }
+        .badge-3 { background: var(--grade3-main) !important; }
         .subject-name-large { font-size: 1.2rem; font-weight: 800; color: #202124; }
 
-        .info-board { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; background: white; border-bottom: 1px solid var(--border); }
-        .info-item { display: flex; flex-direction: column; gap: 3px; border-left: 2px solid #eee; padding-left: 10px; }
-        .info-label { font-size: 0.7rem; color: #999; font-weight: bold; }
+        /* 🎨 상세 정보 보드 파스텔 톤 적용 */
+        .info-board { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; border-bottom: 1px solid var(--border); transition: 0.3s; }
+        .info-item { display: flex; flex-direction: column; gap: 3px; padding-left: 10px; border-left: 2px solid rgba(0,0,0,0.1); }
+        
+        /* 학년별 보드 배경색 클래스 */
+        .bg-grade2 { background-color: var(--grade2-bg) !important; }
+        .bg-grade2 .info-item { border-left-color: var(--grade2-main); }
+        .bg-grade3 { background-color: var(--grade3-bg) !important; }
+        .bg-grade3 .info-item { border-left-color: var(--grade3-main); }
+
+        .info-label { font-size: 0.7rem; color: #666; font-weight: bold; }
         .info-value { font-size: 0.9rem; color: #333; font-weight: 600; }
         
         #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }
         .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; }
         .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: block; margin: 0 auto; }
 
-        /* 학기별 보기 카드 색상 구분 */
+        /* 학기별 보기 카드 */
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
         #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-content: start; }
         .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; height: calc(100vh - 160px); min-height: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         
-        /* 학년별 카드 헤더 색상 */
         .term-header { color: white; padding: 15px; font-weight: bold; text-align: center; border-radius: 11px 11px 0 0; }
-        .header-2 { background: var(--grade2-color); }
-        .header-3 { background: var(--grade3-color); }
+        .header-2 { background: var(--grade2-main); }
+        .header-3 { background: var(--grade3-main); }
 
         .term-body { padding: 0; flex: 1; overflow-y: auto; background: #fff; }
         .term-subject { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -79,12 +88,13 @@
             #col-detail { min-height: 600px; }
             #page-term.active { grid-template-columns: 1fr; }
             .term-card { height: 500px; }
+            .info-board { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div id="loading"><b>학년별 맞춤 정보를 구성 중입니다...</b></div>
+    <div id="loading"><b>학년별 컬러 테마를 적용 중입니다...</b></div>
 
     <header>
         <div class="logo" onclick="showPage('home')">안성여고 교육과정 박람회</div>
@@ -97,9 +107,9 @@
 
     <main id="main-container">
         <section id="page-home" class="page-content active" style="flex-direction: column; justify-content: center; align-items: center; background: white; text-align: center; padding: 40px;">
-            <h1 style="font-size: 1.8rem;">2026 안성여고 교육과정 박람회</h1>
-            <p style="color: #666;">2학년(파랑) & 3학년(초록) 정보를 확인하세요.</p>
-            <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px; font-weight:bold;">입장하기</button>
+            <h1 style="font-size: 1.8rem; margin-bottom: 10px;">2026 안성여고 교육과정 박람회</h1>
+            <p style="color: #666;">파스텔 테마로 더욱 편안해진 과목 안내 시스템</p>
+            <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px; font-weight:bold;">박람회 입장하기</button>
         </section>
 
         <section id="page-subject" class="page-content">
@@ -154,7 +164,7 @@
                 const grouped = {};
 
                 rows.slice(1).forEach(row => {
-                    const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, "").trim());
+                    const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^주"]*$)/).map(v => v.replace(/^"|"$/g, "").trim());
                     if (c.length < 2) return;
                     const gName = c[0]; 
                     if(!gName) return;
@@ -192,18 +202,26 @@
 
             const titleBar = document.getElementById('detail-title-bar');
             const badge = document.getElementById('v-badge-group');
+            const infoBoard = document.getElementById('info-board');
             
             titleBar.style.display = 'flex';
             badge.innerText = s.gName;
             
-            // ✅ 학년에 따른 뱃지 색상 변경 (E열 데이터 기준)
+            // ✅ 학년 데이터(E열)에 따라 파스텔 배경색 및 뱃지 클래스 변경
             badge.className = 'badge-group'; 
-            if(String(s.grade).includes('2')) badge.classList.add('badge-2');
-            else if(String(s.grade).includes('3')) badge.classList.add('badge-3');
+            infoBoard.className = 'info-board'; // 초기화
+            
+            if(String(s.grade).includes('2')) {
+                badge.classList.add('badge-2');
+                infoBoard.classList.add('bg-grade2');
+            } else if(String(s.grade).includes('3')) {
+                badge.classList.add('badge-3');
+                infoBoard.classList.add('bg-grade3');
+            }
 
             document.getElementById('v-subject-name').innerText = s.name;
             document.getElementById('empty-msg').style.display = 'none';
-            document.getElementById('info-board').style.display = 'grid';
+            infoBoard.style.display = 'grid';
 
             document.getElementById('v-grade').innerText = s.grade || "-";
             document.getElementById('v-term').innerText = s.term || "-";
