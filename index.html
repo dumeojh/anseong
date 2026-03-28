@@ -9,7 +9,7 @@
         * { box-sizing: border-box; }
         body { font-family: 'Pretendard', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
 
-        /* 헤더 스타일 */
+        /* 헤더 */
         header { background: var(--primary); color: white; padding: 10px 15px 0 15px; flex-shrink: 0; z-index: 100; }
         .logo { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
         .nav-tabs { display: flex; gap: 5px; list-style: none; margin: 0; padding: 0; }
@@ -24,45 +24,44 @@
         #page-home { flex-direction: column; justify-content: center; align-items: center; background: white; text-align: center; }
         .home-btn { margin-top:20px; padding: 15px 40px; background: var(--primary); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
 
-        /* [2] 교과별 보기 레이아웃 */
+        /* [2] 교과별 보기 (3컬럼) */
         .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
         .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid var(--border); color: #555; }
         .list-container { flex: 1; overflow-y: auto; }
-        
         #col-group { flex: 0 0 160px; }
         #col-subject { flex: 0 0 220px; background: #fafafa; }
-        #col-detail { flex: 1; background: #f8f9fa; }
+        #col-detail { flex: 1; background: #f8f9fa; display: flex; flex-direction: column; }
 
-        .item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.9rem; display: flex; justify-content: space-between; }
+        .item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
         .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 4px solid var(--primary); }
 
-        /* 상세 정보 보드 (C~K열 내용 표시) */
+        /* 상세 정보 보드 (C열~K열) */
         .info-board { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; background: white; border-bottom: 1px solid var(--border); }
         .info-item { display: flex; flex-direction: column; gap: 4px; border-left: 2px solid #eee; padding-left: 8px; }
         .info-label { font-size: 0.7rem; color: #999; font-weight: bold; }
         .info-value { font-size: 0.9rem; color: #333; font-weight: 600; }
         
-        /* 뷰어 영역 */
         #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }
         .viewer-box { width: 100%; max-width: 800px; display: none; }
         .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .viewer-box iframe { width: 100%; height: 800px; border: none; background: white; }
 
-        /* [3] 학기별 보기 그리드 */
+        /* [3] 학기별 보기 (4열 그리드) */
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
-        #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; align-content: start; }
-        .term-card { background: white; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
-        .term-header { background: #444; color: white; padding: 10px; font-weight: bold; text-align: center; font-size: 0.9rem; }
-        .term-subject { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; cursor: pointer; }
-        .term-subject:hover { background: #e8f0fe; font-weight: bold; }
+        #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; align-content: start; }
+        .term-card { background: white; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; min-height: 350px; }
+        .term-header { background: #444; color: white; padding: 12px; font-weight: bold; text-align: center; font-size: 0.9rem; }
+        .term-body { padding: 5px; flex: 1; }
+        .term-subject { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
+        .term-subject:hover { background: #e8f0fe; color: var(--primary); font-weight: bold; }
 
         #loading { position: fixed; inset: 0; background: white; display: flex; justify-content: center; align-items: center; z-index: 1000; }
     </style>
 </head>
 <body>
 
-    <div id="loading"><b>박람회 데이터를 동기화 중입니다...</b></div>
+    <div id="loading"><b>데이터를 불러오는 중입니다...</b></div>
 
     <header>
         <div class="logo" onclick="showPage('home')">안성여고 교육과정 박람회</div>
@@ -76,30 +75,24 @@
     <main>
         <section id="page-home" class="page-content active">
             <h1>2026 안성여고 교육과정 박람회</h1>
-            <button class="home-btn" onclick="showPage('subject')">입장하기</button>
+            <button class="home-btn" onclick="showPage('subject')">과목 탐색 시작하기</button>
         </section>
 
         <section id="page-subject" class="page-content">
-            <div class="column" id="col-group">
-                <div class="column-header">교과군</div>
-                <div id="group-list" class="list-container"></div>
-            </div>
-            <div class="column" id="col-subject">
-                <div class="column-header">과목 선택</div>
-                <div id="subject-list" class="list-container"></div>
-            </div>
+            <div class="column" id="col-group"><div class="column-header">교과군</div><div id="group-list" class="list-container"></div></div>
+            <div class="column" id="col-subject"><div class="column-header">과목 선택</div><div id="subject-list" class="list-container"></div></div>
             <div class="column" id="col-detail">
                 <div id="info-board" class="info-board">
                     <div class="info-item"><div class="info-label">대상학년</div><div id="v-grade" class="info-value"></div></div>
                     <div class="info-item"><div class="info-label">대상학기</div><div id="v-term" class="info-value"></div></div>
-                    <div class="info-item"><div class="info-label">일반/진로</div><div id="v-gen" class="info-value"></div></div>
+                    <div class="info-item"><div class="info-label">구분</div><div id="v-gen" class="info-value"></div></div>
                     <div class="info-item"><div class="info-label">이수유형</div><div id="v-type" class="info-value"></div></div>
                     <div class="info-item"><div class="info-label">선택그룹</div><div id="v-sgroup" class="info-value"></div></div>
                     <div class="info-item"><div class="info-label">학점</div><div id="v-credit" class="info-value"></div></div>
                     <div class="info-item" style="grid-column: span 2;"><div class="info-label">비고</div><div id="v-note" class="info-value"></div></div>
                 </div>
                 <div id="viewer-container">
-                    <div id="empty-msg" style="color:#ccc; margin-top:50px;">과목을 선택하면 상세 정보가 나타납니다.</div>
+                    <div id="empty-msg" style="color:#ccc; margin-top:50px;">과목을 선택해주세요.</div>
                     <div id="box-f1" class="viewer-box"><img id="img-f1"><iframe id="pdf-f1"></iframe></div>
                     <div id="box-f2" class="viewer-box"><img id="img-f2"><iframe id="pdf-f2"></iframe></div>
                 </div>
@@ -119,7 +112,7 @@
             document.querySelectorAll('.nav-tabs li').forEach(t => t.classList.remove('active'));
             document.getElementById('page-'+id).classList.add('active');
             document.getElementById('tab-'+id).classList.add('active');
-            if(id === 'term') renderTerm();
+            if(id === 'term') renderTermView();
         }
 
         async function init() {
@@ -131,7 +124,7 @@
 
                 rows.slice(1).forEach(row => {
                     const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, "").trim());
-                    // 매핑 가이드: 0:교과군, 1:과목명, 2:파일1, 3:파일2, 4:학년, 5:학기, 6:일반/진로, 7:이수유형, 8:선택그룹, 9:학점, 10:비고
+                    if (c.length < 6) return;
                     const gName = c[0];
                     if(!grouped[gName]) grouped[gName] = { name: gName, subjects: [] };
                     grouped[gName].subjects.push({
@@ -142,7 +135,7 @@
                 db = Object.values(grouped);
                 renderGroups();
                 document.getElementById('loading').style.display = 'none';
-            } catch (e) { console.error("Data Load Error", e); }
+            } catch (e) { console.error(e); }
         }
 
         function renderGroups() {
@@ -154,7 +147,7 @@
         function selectGroup(i) {
             curGIdx = i;
             renderGroups();
-            resetDetail();
+            resetDetailView();
             document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => 
                 `<div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`
             ).join('');
@@ -166,17 +159,15 @@
 
             document.getElementById('empty-msg').style.display = 'none';
             document.getElementById('info-board').style.display = 'grid';
+            document.getElementById('v-grade').innerText = s.grade;
+            document.getElementById('v-term').innerText = s.term;
+            document.getElementById('v-gen').innerText = s.gen;
+            document.getElementById('v-type').innerText = s.type;
+            document.getElementById('v-sgroup').innerText = s.sgroup;
+            document.getElementById('v-credit').innerText = s.credit;
+            document.getElementById('v-note').innerText = s.note;
 
-            // C열부터 K열 데이터 매칭 (학년, 학기, 일반/진로, 이수유형, 선택그룹, 학점, 비고)
-            document.getElementById('v-grade').innerText = s.grade || "-";
-            document.getElementById('v-term').innerText = s.term || "-";
-            document.getElementById('v-gen').innerText = s.gen || "-";
-            document.getElementById('v-type').innerText = s.type || "-";
-            document.getElementById('v-sgroup').innerText = s.sgroup || "-";
-            document.getElementById('v-credit').innerText = s.credit || "-";
-            document.getElementById('v-note').innerText = s.note || "-";
-
-            const setView = (file, boxI, imgI, pdfI) => {
+            const updateViewer = (file, boxI, imgI, pdfI) => {
                 const box = document.getElementById(boxI), img = document.getElementById(imgI), pdf = document.getElementById(pdfI);
                 if(file && file !== "-") {
                     box.style.display = 'block';
@@ -185,18 +176,18 @@
                     else { pdf.src="jpgs/"+file; pdf.style.display='block'; img.style.display='none'; }
                 } else { box.style.display = 'none'; }
             };
-            setView(s.f1, 'box-f1', 'img-f1', 'pdf-f1');
-            setView(s.f2, 'box-f2', 'img-f2', 'pdf-f2');
+            updateViewer(s.f1, 'box-f1', 'img-f1', 'pdf-f1');
+            updateViewer(s.f2, 'box-f2', 'img-f2', 'pdf-f2');
             document.getElementById('viewer-container').scrollTop = 0;
         }
 
-        function resetDetail() {
+        function resetDetailView() {
             document.getElementById('info-board').style.display = 'none';
             document.getElementById('empty-msg').style.display = 'block';
             document.querySelectorAll('.viewer-box').forEach(b => b.style.display = 'none');
         }
 
-        function renderTerm() {
+        function renderTermView() {
             const layout = [
                 {g:'2', t:'1학기', label:'2학년 1학기'}, {g:'2', t:'2학기', label:'2학년 2학기'},
                 {g:'3', t:'1학기', label:'3학년 1학기'}, {g:'3', t:'2학기', label:'3학년 2학기'}
@@ -210,14 +201,14 @@
                     <div class="term-card">
                         <div class="term-header">${lt.label}</div>
                         <div class="term-body">
-                            ${subs.map(s => `<div class="term-subject" onclick="jump('${s.gName}', '${s.name}')">${s.name}</div>`).join('')}
+                            ${subs.map(s => `<div class="term-subject" onclick="jumpTo('${s.gName}', '${s.name}')">${s.name}</div>`).join('')}
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function jump(gn, sn) {
+        function jumpTo(gn, sn) {
             showPage('subject');
             const gi = db.findIndex(g => g.name === gn);
             if(gi > -1) {
