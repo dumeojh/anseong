@@ -8,30 +8,50 @@
         :root { --primary: #1a73e8; --bg: #f8f9fa; --border: #e0e0e0; }
         * { box-sizing: border-box; }
         body { font-family: 'Pretendard', -apple-system, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
+
         header { background: var(--primary); color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 10; }
         .logo { font-size: 1.1rem; font-weight: bold; }
         .nav { display: flex; gap: 10px; list-style: none; margin: 0; padding: 0; }
         .nav li { font-size: 0.85rem; cursor: pointer; padding: 5px 12px; border-radius: 4px; border: 1px solid white; }
-        .login-btn { background: white; color: var(--primary); border: none; font-weight: bold; cursor: pointer; padding: 5px 10px; border-radius: 4px; }
+        
         main { flex: 1; display: flex; overflow: hidden; flex-direction: row; }
+
+        /* 컬럼 설정 */
         .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
         .column-header { background: #eee; padding: 12px; font-weight: bold; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
         .list-container { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
         #col-group { flex: 0 0 160px; }
         #col-subject { flex: 0 0 220px; background: #fafafa; }
         #col-detail { flex: 1; border-right: none; display: flex; flex-direction: column; }
+
+        /* 리스트 아이템 */
         .item { padding: 15px 12px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; }
         .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 4px solid var(--primary); }
-        .info-board { display: none; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; padding: 15px; background: #f1f3f4; border-bottom: 1px solid var(--border); }
-        .info-item { display: flex; flex-direction: column; gap: 4px; }
-        .info-label { font-size: 0.75rem; color: #666; font-weight: bold; }
-        .info-value { font-size: 0.9rem; color: #1a73e8; font-weight: bold; word-break: keep-all; }
+
+        /* 상세 정보 보드 (E~K열 매핑) */
+        .info-board { 
+            display: none; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 12px; 
+            padding: 15px; 
+            background: #fff; 
+            border-bottom: 1px solid var(--border);
+            box-shadow: inset 0 -2px 5px rgba(0,0,0,0.05);
+        }
+        .info-item { display: flex; flex-direction: column; gap: 4px; padding: 5px; border-left: 2px solid #e8f0fe; padding-left: 10px; }
+        .info-label { font-size: 0.75rem; color: #888; font-weight: bold; }
+        .info-value { font-size: 0.9rem; color: #333; font-weight: bold; word-break: keep-all; }
+
+        /* 뷰어 영역 */
         #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; justify-content: center; align-items: flex-start; padding: 20px; position: relative; }
         #subject-image { max-width: 100%; height: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.4); display: none; margin-bottom: 20px; }
         #pdf-view { width: 100%; height: 100%; border: none; display: none; }
         .empty-view { color: #ccc; text-align: center; margin-top: 100px; }
+
         #loading { position: fixed; top:0; left:0; width:100%; height:100%; background:white; display:flex; justify-content:center; align-items:center; z-index:9999; font-weight:bold; flex-direction: column; gap: 10px; }
+
         @media (max-width: 768px) {
             main { flex-direction: column; overflow-y: auto; }
             .column { width: 100%; flex: none; height: auto; }
@@ -39,9 +59,6 @@
             #col-detail { height: auto; min-height: 600px; }
             .info-board { grid-template-columns: 1fr 1fr; }
         }
-        #login-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-box { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 320px; }
-        .modal-box input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -55,7 +72,6 @@
         <div class="logo">안성여고 교육과정 박람회</div>
         <ul class="nav">
             <li onclick="location.reload()">새로고침</li>
-            <li><button class="login-btn" onclick="openLogin()">로그인</button></li>
         </ul>
     </header>
 
@@ -76,12 +92,13 @@
             <div class="column-header">상세 정보 및 안내</div>
             
             <div id="info-board" class="info-board">
-                <div class="info-item"><div class="info-label">대상학년 / 학기</div><div id="view-term" class="info-value">-</div></div>
-                <div class="info-item"><div class="info-label">추가 정보(D열)</div><div id="view-extra" class="info-value">-</div></div>
-                <div class="info-item"><div class="info-label">이수유형</div><div id="view-type" class="info-value">-</div></div>
-                <div class="info-item"><div class="info-label">선택그룹</div><div id="view-sgroup" class="info-value">-</div></div>
-                <div class="info-item"><div class="info-label">학점</div><div id="view-credit" class="info-value">-</div></div>
-                <div class="info-item" style="grid-column: span 2;"><div class="info-label">비고</div><div id="view-note" class="info-value">-</div></div>
+                <div class="info-item"><div class="info-label">학년</div><div id="v-grade" class="info-value">-</div></div>
+                <div class="info-item"><div class="info-label">학기</div><div id="v-term" class="info-value">-</div></div>
+                <div class="info-item"><div class="info-label">입학생 기준</div><div id="v-entry" class="info-value">-</div></div>
+                <div class="info-item"><div class="info-label">선택유형</div><div id="v-type" class="info-value">-</div></div>
+                <div class="info-item"><div class="info-label">선택그룹</div><div id="v-sgroup" class="info-value">-</div></div>
+                <div class="info-item"><div class="info-label">학점</div><div id="v-credit" class="info-value">-</div></div>
+                <div class="info-item" style="grid-column: span 2;"><div class="info-label">비고</div><div id="v-note" class="info-value">-</div></div>
             </div>
 
             <div id="viewer-container">
@@ -92,29 +109,15 @@
         </section>
     </main>
 
-    <div id="login-modal">
-        <div class="modal-box">
-            <h3 style="margin:0 0 15px 0">관리자 로그인</h3>
-            <p style="font-size:0.8rem; color:red;">※ 데이터 수정은 구글 시트에서 진행해 주세요.</p>
-            <input type="text" id="uid" placeholder="아이디">
-            <input type="password" id="upw" placeholder="비밀번호">
-            <button style="width:100%; padding:12px; background:#1a73e8; color:white; border:none; border-radius:6px; cursor:pointer;" onclick="doLogin()">로그인</button>
-            <button onclick="closeLogin()" style="width:100%; background:none; border:none; margin-top:10px; color:#666; cursor:pointer;">닫기</button>
-        </div>
-    </div>
-
     <script>
         const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTDa5xchZiJEE6LrOnNtMo1yKTOMXfCO9jo9-xjvm5LybysyKeTONYlYISTzC8tVCMIclHP9ALGF-AM/pub?gid=0&single=true&output=csv";
 
         let db = []; 
-        let curGroupIdx = null;
 
         async function fetchSheetData() {
             const loadingEl = document.getElementById('loading');
             try {
                 const response = await fetch(SHEET_CSV_URL);
-                if (!response.ok) throw new Error("네트워크 응답 없음");
-                
                 const csvData = await response.text();
                 const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "");
                 const groupedData = {};
@@ -122,10 +125,9 @@
                 for (let i = 1; i < rows.length; i++) {
                     const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, "").trim());
                     
-                    // ⚠️ D열이 추가되어 인덱스가 하나씩 밀렸습니다.
-                    if (cols.length >= 4) {
-                        // A:group, B:name, C:file, D:extra(새로 추가됨), E:grade, F:term...
-                        const [group, name, file, extra, grade, term, general, type, sGroup, credit, note] = cols;
+                    // 매핑 기준: A:0, B:1, C:2, D:3, E:4, F:5, G:6, H:7, I:8, J:9, K:10
+                    if (cols.length >= 11) {
+                        const [group, name, file, dummyD, grade, term, entry, type, sgroup, credit, note] = cols;
 
                         if (!group || !name) continue;
 
@@ -136,49 +138,43 @@
                         groupedData[group].subjects.push({ 
                             n: name, 
                             url: "jpgs/" + file,
-                            extra: extra || "-", // D열 데이터
-                            grade: grade || "-",
-                            term: term || "-",
-                            type: type || "-",
-                            sGroup: sGroup || "-",
-                            credit: credit || "-",
-                            note: note || "-"
+                            grade: grade,    // E열
+                            term: term,      // F열
+                            entry: entry,    // G열
+                            type: type,      // H열
+                            sgroup: sgroup,  // I열
+                            credit: credit,  // J열
+                            note: note       // K열
                         });
                     }
                 }
 
                 db = Object.values(groupedData);
-                
-                if (db.length === 0) {
-                    loadingEl.innerHTML = "시트에 데이터가 없습니다.";
-                } else {
-                    renderGroups();
-                    loadingEl.style.display = 'none';
-                }
+                renderGroups();
+                loadingEl.style.display = 'none';
             } catch (error) {
-                console.error("실패:", error);
-                loadingEl.innerText = "데이터 로드 에러: " + error.message;
+                console.error(error);
+                loadingEl.innerText = "데이터 로드 에러";
             }
         }
 
         function renderGroups() {
             const container = document.getElementById('group-list');
             container.innerHTML = db.map((g, i) => `
-                <div class="item ${curGroupIdx === i ? 'active' : ''}" onclick="selectGroup(${i})">
-                    <span>${g.name}</span>
-                    <span>❯</span>
+                <div class="item" onclick="selectGroup(${i}, this)">
+                    <span>${g.name}</span><span>❯</span>
                 </div>
             `).join('');
         }
 
-        function selectGroup(idx) {
-            curGroupIdx = idx;
-            renderGroups();
+        function selectGroup(idx, el) {
+            document.querySelectorAll('#group-list .item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            
             const subContainer = document.getElementById('subject-list');
-            subContainer.innerHTML = db[idx].subjects.map((s, si) => `
+            subContainer.innerHTML = db[idx].subjects.map((s) => `
                 <div class="item" onclick='updateDetail(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>
-                    <span>${s.n}</span>
-                    <span>❯</span>
+                    <span>${s.n}</span><span>❯</span>
                 </div>
             `).join('');
         }
@@ -190,13 +186,14 @@
             document.getElementById('info-board').style.display = 'grid';
             document.getElementById('empty-msg').style.display = 'none';
             
-            // D열 데이터를 화면에 출력하도록 연결
-            document.getElementById('view-term').innerText = `${data.grade}학년 / ${data.term}`;
-            document.getElementById('view-extra').innerText = data.extra; // D열 출력
-            document.getElementById('view-type').innerText = data.type;
-            document.getElementById('view-sgroup').innerText = data.sGroup;
-            document.getElementById('view-credit').innerText = data.credit + " 학점";
-            document.getElementById('view-note').innerText = data.note;
+            // 데이터 출력 (E~K열)
+            document.getElementById('v-grade').innerText = data.grade || "-";
+            document.getElementById('v-term').innerText = data.term || "-";
+            document.getElementById('v-entry').innerText = data.entry || "-";
+            document.getElementById('v-type').innerText = data.type || "-";
+            document.getElementById('v-sgroup').innerText = data.sgroup || "-";
+            document.getElementById('v-credit').innerText = data.credit + (data.credit ? " 학점" : "-");
+            document.getElementById('v-note').innerText = data.note || "-";
 
             const imgTag = document.getElementById('subject-image');
             const pdfTag = document.getElementById('pdf-view');
@@ -206,25 +203,11 @@
                 pdfTag.style.display = 'none';
                 imgTag.style.display = 'block';
                 imgTag.src = data.url;
-                document.getElementById('viewer-container').scrollTop = 0;
             } else {
                 imgTag.style.display = 'none';
                 pdfTag.style.display = 'block';
                 pdfTag.src = data.url;
             }
-
-            if(window.innerWidth <= 768) {
-                document.getElementById('col-detail').scrollIntoView({behavior: 'smooth'});
-            }
-        }
-
-        function openLogin() { document.getElementById('login-modal').style.display='flex'; }
-        function closeLogin() { document.getElementById('login-modal').style.display='none'; }
-        function doLogin() {
-            if(document.getElementById('uid').value==='admin' && document.getElementById('upw').value==='1234') {
-                alert("관리자 확인되었습니다.");
-                closeLogin();
-            } else { alert("로그인 실패"); }
         }
 
         fetchSheetData();
