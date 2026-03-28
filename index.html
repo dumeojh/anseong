@@ -2,10 +2,18 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>2026 안성여고 교육과정 박람회</title>
     <style>
         :root { --primary: #1a73e8; --bg: #f8f9fa; --border: #e0e0e0; }
+        
+        /* 💡 핵심: 화면 전환 시 글자 크기 멋대로 커지는 현상 방지 */
+        html {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
         * { box-sizing: border-box; }
         body { font-family: 'Pretendard', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
 
@@ -58,13 +66,24 @@
         
         /* 📱 모바일 대응 최적화 */
         @media (max-width: 768px) {
-            main { overflow-y: auto; } /* 모바일에서는 세로 스크롤 허용 */
+            main { overflow-y: auto; -webkit-overflow-scrolling: touch; } 
             .page-content.active { flex-direction: column; height: auto; overflow: visible; }
             .column { width: 100%; flex: none; border-right: none; border-bottom: 1px solid var(--border); }
-            .list-container { max-height: 300px; } /* 리스트가 너무 길어지지 않게 조정 */
+            .list-container { max-height: 350px; } 
             #col-detail { min-height: 600px; }
             #page-term.active { grid-template-columns: 1fr; }
-            .term-card { height: 450px; }
+            .term-card { height: 500px; }
+        }
+
+        /* 📱 가로 모드(Landscape) 대응 */
+        @media (max-width: 900px) and (orientation: landscape) {
+            .page-content.active { flex-direction: row; height: 100vh; overflow: hidden; }
+            .column { height: 100%; border-right: 1px solid var(--border); border-bottom: none; }
+            #col-group { flex: 0 0 140px; }
+            #col-subject { flex: 0 0 180px; }
+            .list-container { max-height: none; }
+            #page-term.active { grid-template-columns: 1fr 1fr; }
+            .term-card { height: calc(100vh - 120px); }
         }
     </style>
 </head>
@@ -134,7 +153,6 @@
             document.querySelectorAll('.nav-tabs li').forEach(t => t.classList.remove('active'));
             document.getElementById('page-'+id).classList.add('active');
             document.getElementById('tab-'+id).classList.add('active');
-            // 페이지 이동 시 상단으로 스크롤 초기화
             document.getElementById('main-container').scrollTop = 0;
             if(id === 'term') renderTerm();
         }
@@ -172,13 +190,8 @@
             const groupName = db[i].name;
             renderGroups();
             resetDetail();
-            
-            // ✅ 과목 선택 헤더 업데이트 (예: 2. 과목 선택 (국어))
             document.getElementById('subject-header').innerText = `2. 과목 선택 (${groupName})`;
-            
             document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => `<div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`).join('');
-            
-            // ✅ 모바일 스크롤 이동: 과목 선택 컬럼으로 화면 이동
             if (window.innerWidth <= 768) {
                 document.getElementById('col-subject').scrollIntoView({ behavior: 'smooth' });
             }
@@ -211,8 +224,6 @@
             };
             setImgViewer(s.f1, 'box-f1', 'img-f1');
             setImgViewer(s.f2, 'box-f2', 'img-f2');
-            
-            // ✅ 모바일 스크롤 이동: 상세 정보 컬럼으로 화면 이동
             if (window.innerWidth <= 768) {
                 document.getElementById('col-detail').scrollIntoView({ behavior: 'smooth' });
             } else {
