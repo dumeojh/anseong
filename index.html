@@ -5,64 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 안성여고 교육과정 박람회</title>
     <style>
-        :root { --primary: #1a73e8; --bg: #f8f9fa; --border: #e0e0e0; }
+        :root { --primary: #1a73e8; --bg: #f8f9fa; --border: #e0e0e0; --accent: #34a853; }
         * { box-sizing: border-box; }
-        body { font-family: 'Pretendard', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
 
-        header { background: var(--primary); color: white; padding: 10px 15px 0 15px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; z-index: 10; }
-        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        /* 헤더 & 네비게이션 */
+        header { background: var(--primary); color: white; padding: 10px 15px 0 15px; flex-shrink: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px; }
         .logo { font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        
         .nav-tabs { display: flex; gap: 5px; list-style: none; margin: 0; padding: 0; }
-        .nav-tabs li { font-size: 0.9rem; cursor: pointer; padding: 10px 20px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.1); transition: 0.3s; }
+        .nav-tabs li { font-size: 0.9rem; cursor: pointer; padding: 12px 20px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.1); transition: 0.3s; color: rgba(255,255,255,0.8); }
         .nav-tabs li.active { background: white; color: var(--primary); font-weight: bold; }
 
         main { flex: 1; display: flex; overflow: hidden; position: relative; }
-        .page-content { display: none; width: 100%; height: 100%; }
+        .page-content { display: none; width: 100%; height: 100%; overflow: hidden; }
         .page-content.active { display: flex; }
 
-        /* 레이아웃 */
-        .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
-        .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
-        .list-container { flex: 1; overflow-y: auto; }
+        /* [1] 홈 화면 */
+        #page-home { flex-direction: column; justify-content: center; align-items: center; background: white; text-align: center; }
+        .home-visual { font-size: 4rem; margin-bottom: 20px; }
+        .home-btn { margin-top:30px; padding: 15px 40px; background: var(--primary); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
 
+        /* [2] 교과별 보기 (3컬럼) */
+        .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
+        .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.9rem; border-bottom: 1px solid var(--border); color: #555; }
+        .list-container { flex: 1; overflow-y: auto; }
         #col-group { flex: 0 0 180px; }
         #col-subject { flex: 0 0 240px; background: #fafafa; }
-        #col-detail { flex: 1; display: flex; flex-direction: column; background: #f8f9fa; }
+        #col-detail { flex: 1; border-right: none; background: #f8f9fa; }
 
-        /* 아이템 */
-        .item { padding: 18px 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.95rem; display: flex; justify-content: space-between; transition: 0.2s; }
+        .item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center; }
         .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 5px solid var(--primary); }
 
-        /* 정보 보드 */
-        .info-board { display: none; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding: 20px; background: white; border-bottom: 1px solid var(--border); }
-        .info-item { display: flex; flex-direction: column; gap: 4px; }
-        .info-label { font-size: 0.75rem; color: #888; font-weight: bold; }
+        /* 정보 보드 & 뷰어 */
+        .info-board { display: none; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 20px; background: white; border-bottom: 1px solid var(--border); }
+        .info-item { display: flex; flex-direction: column; gap: 3px; }
+        .info-label { font-size: 0.7rem; color: #888; font-weight: bold; }
         .info-value { font-size: 0.95rem; color: #333; font-weight: 600; }
-
-        /* 뷰어 영역 (파일 2개를 위해 스크롤 가능하게 설정) */
-        #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 25px; gap: 20px; }
-        .viewer-box { width: 100%; max-width: 900px; display: none; }
-        .viewer-box img { width: 100%; height: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 4px; }
-        .viewer-box iframe { width: 100%; height: 800px; border: none; background: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        .empty-view { color: #aaa; text-align: center; margin-top: 100px; font-size: 1.1rem; }
+        #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }
+        .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; }
+        .viewer-label { color: #ccc; font-size: 0.8rem; margin-bottom: 8px; text-align: center; }
+        .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .viewer-box iframe { width: 100%; height: 800px; border: none; background: white; }
 
-        /* 홈 & 기타 */
-        #page-home { flex-direction: column; justify-content: center; align-items: center; background: white; text-align: center; }
-        #loading { position: fixed; top:0; left:0; width:100%; height:100%; background:white; display:flex; justify-content:center; align-items:center; z-index:9999; }
+        /* [3] 학기별 보기 (그리드) */
+        #page-term { background: #f0f2f5; overflow-y: auto; padding: 20px; display: none; }
+        #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; align-content: start; }
+        .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; min-height: 400px; }
+        .term-header { background: #444; color: white; padding: 12px; font-weight: bold; text-align: center; border-radius: 11px 11px 0 0; }
+        .term-body { padding: 5px; flex: 1; }
+        .term-subject { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; }
+        .term-subject:hover { background: #e8f0fe; color: var(--primary); font-weight: bold; }
+        .term-subject span { font-size: 0.7rem; color: #999; font-weight: normal; }
 
+        /* 로딩 & 모바일 */
+        #loading { position: fixed; inset: 0; background: white; display: flex; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 10px; }
         @media (max-width: 768px) {
-            .page-content.active { flex-direction: column; overflow-y: auto; }
-            .column { width: 100%; flex: none; height: auto; }
-            #col-detail { min-height: 800px; }
+            #page-subject.active { flex-direction: column; overflow-y: auto; }
+            .column { width: 100%; flex: none; }
+            #page-term.active { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div id="loading"><b>데이터를 로드 중입니다...</b></div>
+    <div id="loading"><b>박람회 자료를 불러오는 중...</b></div>
 
     <header>
         <div class="header-top">
@@ -77,8 +86,10 @@
 
     <main>
         <section id="page-home" class="page-content active">
-            <h1 style="font-size: 2rem;">2026 안성여고 교육과정 박람회</h1>
-            <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; background:var(--primary); color:white; border:none; border-radius:30px; cursor:pointer; font-weight:bold;">박람회 입장하기</button>
+            <div class="home-visual">🏫</div>
+            <h1>2026 안성여자고등학교</h1>
+            <h2 style="color:var(--primary)">교육과정 박람회 온라인 안내소</h2>
+            <button class="home-btn" onclick="showPage('subject')">과목 둘러보기</button>
         </section>
 
         <section id="page-subject" class="page-content">
@@ -86,146 +97,154 @@
                 <div class="column-header">교과군</div>
                 <div id="group-list" class="list-container"></div>
             </section>
-            
             <section class="column" id="col-subject">
                 <div class="column-header">과목 선택</div>
                 <div id="subject-list" class="list-container"></div>
             </section>
-            
             <section class="column" id="col-detail">
                 <div id="info-board" class="info-board">
-                    <div class="info-item"><div class="info-label">대상학년 / 학기</div><div id="view-term">-</div></div>
-                    <div class="info-item"><div class="info-label">이수유형</div><div id="view-type">-</div></div>
-                    <div class="info-item"><div class="info-label">선택그룹</div><div id="view-sgroup">-</div></div>
-                    <div class="info-item"><div class="info-label">단위(학점)</div><div id="view-credit">-</div></div>
-                    <div class="info-item" style="grid-column: span 2;"><div class="info-label">비고</div><div id="view-note">-</div></div>
+                    <div class="info-item"><div class="info-label">대상학년 / 학기</div><div id="view-term" class="info-value"></div></div>
+                    <div class="info-item"><div class="info-label">이수유형</div><div id="view-type" class="info-value"></div></div>
+                    <div class="info-item"><div class="info-label">선택그룹</div><div id="view-sgroup" class="info-value"></div></div>
+                    <div class="info-item"><div class="info-label">학점</div><div id="view-credit" class="info-value"></div></div>
+                    <div class="info-item" style="grid-column: span 2;"><div class="info-label">비고</div><div id="view-note" class="info-value"></div></div>
                 </div>
                 <div id="viewer-container">
-                    <div id="empty-msg" class="empty-view">과목을 선택해주세요.</div>
-                    
-                    <div id="box-file1" class="viewer-box">
-                        <div style="color:white; margin-bottom:10px; font-size:0.8rem;">[안내자료 1]</div>
-                        <img id="img-file1" src="" style="display:none;">
-                        <iframe id="pdf-file1" src="about:blank" style="display:none;"></iframe>
-                    </div>
-
-                    <div id="box-file2" class="viewer-box">
-                        <div style="color:white; margin-bottom:10px; font-size:0.8rem;">[안내자료 2]</div>
-                        <img id="img-file2" src="" style="display:none;">
-                        <iframe id="pdf-file2" src="about:blank" style="display:none;"></iframe>
-                    </div>
+                    <div id="empty-msg" style="color:#aaa; margin-top:100px;">과목을 선택해주세요.</div>
+                    <div id="box-f1" class="viewer-box"><div class="viewer-label">[안내자료 1]</div><img id="img-f1"><iframe id="pdf-f1"></iframe></div>
+                    <div id="box-f2" class="viewer-box"><div class="viewer-label">[안내자료 2]</div><img id="img-f2"><iframe id="pdf-f2"></iframe></div>
                 </div>
             </section>
         </section>
 
         <section id="page-term" class="page-content">
-            <div style="margin:auto; text-align:center;"><h2>🚧 학기별 보기 준비 중</h2></div>
-        </section>
+            </section>
     </main>
 
     <script>
-        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsBI-I1tIcnT0nuNa9BFcLaMzes4mIxE22VPLMGI0dFREjuifC-kvBYtNlpHaUyMCKCEHeTkwtRAKN/pub?gid=0&single=true&output=csv";
-
+        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTDa5xchZiJEE6LrOnNtMo1yKTOMXfCO9jo9-xjvm5LybysyKeTONYlYISTzC8tVCMIclHP9ALGF-AM/pub?gid=0&single=true&output=csv";
         let db = []; 
-        let curGroupIdx = null;
+        let currentGroupIdx = null;
 
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tabs li').forEach(t => t.classList.remove('active'));
             document.getElementById('page-' + pageId).classList.add('active');
             document.getElementById('tab-' + pageId).classList.add('active');
+            if(pageId === 'term') renderTermView();
         }
 
-        async function fetchSheetData() {
+        async function init() {
             try {
-                const response = await fetch(SHEET_CSV_URL);
-                const csvData = await response.text();
-                const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== "");
-                const groupedData = {};
+                const res = await fetch(SHEET_URL);
+                const data = await res.text();
+                const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
+                const groups = {};
 
                 for (let i = 1; i < rows.length; i++) {
-                    const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, "").trim());
-                    if (cols.length >= 4) {
-                        // C열(index 2) -> file1, D열(index 3) -> file2
-                        const [group, name, file1, file2, grade, term, general, type, sGroup, credit, note] = cols;
-                        if (!group || !name) continue;
-
-                        if (!groupedData[group]) groupedData[group] = { name: group, subjects: [] };
-                        groupedData[group].subjects.push({ 
-                            n: name, 
-                            f1: file1 ? "jpgs/" + file1 : null, 
-                            f2: file2 ? "jpgs/" + file2 : null,
-                            grade: grade || "-", term: term || "-",
-                            type: type || "-", sGroup: sGroup || "-", credit: credit || "-", note: note || "-"
-                        });
-                    }
+                    const c = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, "").trim());
+                    if (c.length < 6) continue;
+                    // A:교과군, B:과목, C:파일1, D:파일2, E:학년, F:학기, G:일반/진로, H:이수유형, I:선택그룹, J:학점, K:비고
+                    const [group, name, f1, f2, grade, term, general, type, sgroup, credit, note] = c;
+                    if(!groups[group]) groups[group] = { name: group, subjects: [] };
+                    groups[group].subjects.push({
+                        group, name, f1, f2, grade, term, type, sgroup, credit, note
+                    });
                 }
-                db = Object.values(groupedData);
-                renderGroups();
+                db = Object.values(groups);
+                renderGroupList();
                 document.getElementById('loading').style.display = 'none';
             } catch (e) { console.error(e); }
         }
 
-        function renderGroups() {
-            const container = document.getElementById('group-list');
-            container.innerHTML = db.map((g, i) => `<div class="item ${curGroupIdx === i ? 'active' : ''}" onclick="selectGroup(${i})"><span>${g.name}</span><span>❯</span></div>`).join('');
+        function renderGroupList() {
+            const html = db.map((g, i) => `<div class="item ${currentGroupIdx===i?'active':''}" onclick="selectGroup(${i})">${g.name}<span>❯</span></div>`).join('');
+            document.getElementById('group-list').innerHTML = html;
         }
 
         function selectGroup(idx) {
-            curGroupIdx = idx;
-            renderGroups();
-            
-            // 초기화
-            document.getElementById('info-board').style.display = 'none';
-            document.getElementById('empty-msg').style.display = 'block';
-            document.querySelectorAll('.viewer-box').forEach(b => b.style.display = 'none');
-
-            const subContainer = document.getElementById('subject-list');
-            subContainer.innerHTML = db[idx].subjects.map((s) => `
-                <div class="item" onclick='updateDetail(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>
-                    <span>${s.n}</span><span>❯</span>
+            currentGroupIdx = idx;
+            renderGroupList();
+            resetDetail();
+            const html = db[idx].subjects.map(s => `
+                <div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>
+                    ${s.name}<span>❯</span>
                 </div>
             `).join('');
+            document.getElementById('subject-list').innerHTML = html;
         }
 
-        function updateDetail(data, el) {
+        function selectSubject(s, el) {
             document.querySelectorAll('#subject-list .item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
+            if(el) el.classList.add('active');
 
-            document.getElementById('info-board').style.display = 'grid';
             document.getElementById('empty-msg').style.display = 'none';
-            document.getElementById('view-term').innerText = `${data.grade} / ${data.term}`;
-            document.getElementById('view-type').innerText = data.type;
-            document.getElementById('view-sgroup').innerText = data.sGroup;
-            document.getElementById('view-credit').innerText = data.credit + " 학점";
-            document.getElementById('view-note').innerText = data.note;
+            document.getElementById('info-board').style.display = 'grid';
+            document.getElementById('view-term').innerText = `${s.grade}학년 / ${s.term}`;
+            document.getElementById('view-type').innerText = s.type;
+            document.getElementById('view-sgroup').innerText = s.sgroup;
+            document.getElementById('view-credit').innerText = s.credit + " 학점";
+            document.getElementById('view-note').innerText = s.note;
 
-            // 파일 뷰어 처리 함수
-            const setupViewer = (fileUrl, boxId, imgId, pdfId) => {
-                const box = document.getElementById(boxId);
-                const img = document.getElementById(imgId);
-                const pdf = document.getElementById(pdfId);
-
-                if (fileUrl && fileUrl !== "jpgs/-" && fileUrl !== "jpgs/") {
+            const updateFile = (file, boxId, imgId, pdfId) => {
+                const box = document.getElementById(boxId), img = document.getElementById(imgId), pdf = document.getElementById(pdfId);
+                if (file && file !== "-" && file !== "") {
                     box.style.display = 'block';
-                    const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileUrl);
-                    if (isImg) {
-                        pdf.style.display = 'none'; img.style.display = 'block'; img.src = fileUrl;
-                    } else {
-                        img.style.display = 'none'; pdf.style.display = 'block'; pdf.src = fileUrl;
-                    }
-                } else {
-                    box.style.display = 'none';
-                }
+                    const url = "jpgs/" + file;
+                    const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(file);
+                    if(isImg) { img.src = url; img.style.display='block'; pdf.style.display='none'; }
+                    else { pdf.src = url; pdf.style.display='block'; img.style.display='none'; }
+                } else { box.style.display = 'none'; }
             };
-
-            setupViewer(data.f1, 'box-file1', 'img-file1', 'pdf-file1');
-            setupViewer(data.f2, 'box-file2', 'img-file2', 'pdf-file2');
-            
+            updateFile(s.f1, 'box-f1', 'img-f1', 'pdf-f1');
+            updateFile(s.f2, 'box-f2', 'img-f2', 'pdf-f2');
             document.getElementById('viewer-container').scrollTop = 0;
         }
 
-        fetchSheetData();
+        function resetDetail() {
+            document.getElementById('info-board').style.display = 'none';
+            document.getElementById('empty-msg').style.display = 'block';
+            document.querySelectorAll('.viewer-box').forEach(b => b.style.display = 'none');
+            document.querySelectorAll('.viewer-box img, .viewer-box iframe').forEach(el => el.src = "");
+        }
+
+        function renderTermView() {
+            const terms = [
+                {g: '2', t: '1학기', label: '2학년 1학기'}, {g: '2', t: '2학기', label: '2학년 2학기'},
+                {g: '3', t: '1학기', label: '3학년 1학기'}, {g: '3', t: '2학기', label: '3학년 2학기'}
+            ];
+            const html = terms.map(term => {
+                let subjects = [];
+                db.forEach(g => g.subjects.forEach(s => {
+                    if(s.grade.includes(term.g) && s.term.includes(term.t)) subjects.push(s);
+                }));
+                return `
+                    <div class="term-card">
+                        <div class="term-header">${term.label}</div>
+                        <div class="term-body">
+                            ${subjects.map(s => `
+                                <div class="term-subject" onclick="jumpToSubject('${s.group}', '${s.name}')">
+                                    ${s.name}<span>${s.group}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('page-term').innerHTML = html;
+        }
+
+        function jumpToSubject(groupName, subjectName) {
+            showPage('subject');
+            const gIdx = db.findIndex(g => g.name === groupName);
+            if(gIdx > -1) {
+                selectGroup(gIdx);
+                const sObj = db[gIdx].subjects.find(s => s.name === subjectName);
+                if(sObj) selectSubject(sObj, null);
+            }
+        }
+
+        init();
     </script>
 </body>
 </html>
