@@ -7,7 +7,7 @@
     <style>
         :root { --primary: #1a73e8; --bg: #f8f9fa; --border: #e0e0e0; }
         * { box-sizing: border-box; }
-        body { font-family: 'Pretendard', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
 
         header { background: var(--primary); color: white; padding: 10px 15px 0 15px; flex-shrink: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo { font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; cursor: pointer; }
@@ -19,6 +19,7 @@
         .page-content { display: none; width: 100%; height: 100%; overflow: hidden; }
         .page-content.active { display: flex; }
 
+        /* 3컬럼 레이아웃 */
         .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
         .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid var(--border); color: #555; }
         .list-container { flex: 1; overflow-y: auto; }
@@ -30,6 +31,7 @@
         .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 5px solid var(--primary); }
 
+        /* 상세 정보 보드 (E~K열) */
         .info-board { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; background: white; border-bottom: 1px solid var(--border); }
         .info-item { display: flex; flex-direction: column; gap: 3px; border-left: 2px solid #eee; padding-left: 10px; }
         .info-label { font-size: 0.7rem; color: #999; font-weight: bold; }
@@ -41,6 +43,7 @@
         .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .viewer-box iframe { width: 100%; height: 800px; border: none; background: white; }
 
+        /* 학기별 보기 */
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
         #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; align-content: start; }
         .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; min-height: 350px; }
@@ -54,7 +57,7 @@
 </head>
 <body>
 
-    <div id="loading"><b>데이터 동기화 중...</b></div>
+    <div id="loading"><b>데이터를 불러오는 중입니다...</b></div>
 
     <header>
         <div class="logo" onclick="showPage('home')">안성여고 교육과정 박람회</div>
@@ -68,12 +71,12 @@
     <main>
         <section id="page-home" class="page-content active">
             <h1 style="margin-top:100px;">2026 안성여고 교육과정 박람회</h1>
-            <button onclick="showPage('subject')" style="padding:15px 30px; cursor:pointer;">입장하기</button>
+            <button onclick="showPage('subject')" style="padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px;">입장하기</button>
         </section>
 
         <section id="page-subject" class="page-content">
-            <div class="column" id="col-group"><div class="column-header">교과군</div><div id="group-list" class="list-container"></div></div>
-            <div class="column" id="col-subject"><div class="column-header">과목 선택</div><div id="subject-list" class="list-container"></div></div>
+            <div class="column" id="col-group"><div class="column-header">교과군(A열)</div><div id="group-list" class="list-container"></div></div>
+            <div class="column" id="col-subject"><div class="column-header">과목선택(B열)</div><div id="subject-list" class="list-container"></div></div>
             <div class="column" id="col-detail">
                 <div id="info-board" class="info-board">
                     <div class="info-item"><div class="info-label">학년</div><div id="v-grade"></div></div>
@@ -85,7 +88,7 @@
                     <div class="info-item" style="grid-column: span 2;"><div class="info-label">비고</div><div id="v-note"></div></div>
                 </div>
                 <div id="viewer-container">
-                    <div id="empty-msg" style="color:#aaa; margin-top:80px;">과목을 선택해주세요.</div>
+                    <div id="empty-msg" style="color:#aaa; margin-top:80px;">교과군과 과목을 차례로 선택해주세요.</div>
                     <div id="box-f1" class="viewer-box"><div class="viewer-label">[안내자료 1]</div><img id="img-f1"><iframe id="pdf-f1"></iframe></div>
                     <div id="box-f2" class="viewer-box"><div class="viewer-label">[안내자료 2]</div><img id="img-f2"><iframe id="pdf-f2"></iframe></div>
                 </div>
@@ -96,7 +99,7 @@
     </main>
 
     <script>
-        // 🔗 수정한 부분: pubhtml을 CSV 출력용 URL로 변경했습니다.
+        // ⚠️ 중요: pubhtml 주소를 반드시 이 형식(pub?output=csv)으로 사용해야 합니다.
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsBI-I1tIcnT0nuNa9BFcLaMzes4mIxE22VPLMGI0dFREjuifC-kvBYtNlpHaUyMCKCEHeTkwtRAKN/pub?gid=0&single=true&output=csv";
         
         let db = [];
@@ -113,49 +116,31 @@
         async function init() {
             try {
                 const res = await fetch(CSV_URL);
-                if (!res.ok) throw new Error("네트워크 응답 오류");
                 const text = await res.text();
-                
-                // 줄바꿈 기준으로 나누고 빈 줄 제거
                 const rows = text.split(/\r?\n/).filter(r => r.trim() !== "");
                 const grouped = {};
 
-                // 헤더(첫 번째 행) 제외하고 데이터 처리
                 rows.slice(1).forEach(row => {
-                    // 쉼표로 구분하되, 따옴표 안의 쉼표는 무시하는 정규식
                     const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, "").trim());
+                    if (c.length < 2) return;
                     
-                    if (c.length < 2) return; // 데이터가 부족하면 무시
-                    
-                    const gName = c[0]; // A열: 교과군
+                    const gName = c[0]; // A열: 교과군 (목차)
                     if(!gName) return;
 
                     if(!grouped[gName]) grouped[gName] = { name: gName, subjects: [] };
                     grouped[gName].subjects.push({
-                        name: c[1] || "이름 없음", // B열: 과목명
-                        f1: c[2],     // C열: 파일1
-                        f2: c[3],     // D열: 파일2
-                        grade: c[4],  // E열: 학년
-                        term: c[5],   // F열: 학기
-                        entry: c[6],  // G열: 입학생기준
-                        type: c[7],   // H열: 선택유형
-                        sgroup: c[8], // I열: 선택그룹
-                        credit: c[9], // J열: 학점
-                        note: c[10],  // K열: 비고
-                        gName: gName
+                        name: c[1] || "과목명 없음", // B열: 과목명
+                        f1: c[2], f2: c[3], grade: c[4], term: c[5], entry: c[6],
+                        type: c[7], sgroup: c[8], credit: c[9], note: c[10], gName: gName
                     });
                 });
 
                 db = Object.values(grouped);
-                if (db.length > 0) {
-                    renderGroups();
-                } else {
-                    console.warn("표시할 데이터가 없습니다.");
-                }
+                if(db.length > 0) renderGroups();
                 document.getElementById('loading').style.display = 'none';
             } catch (e) { 
-                console.error("데이터 초기화 실패:", e);
-                document.getElementById('loading').innerHTML = "<b>데이터를 불러오지 못했습니다.</b><br>시트 설정을 확인해주세요.";
+                console.error("데이터 로드 실패:", e);
+                document.getElementById('loading').innerHTML = "데이터 연동 실패. 시트 주소를 확인하세요.";
             }
         }
 
@@ -193,16 +178,10 @@
                 const box = document.getElementById(boxI), img = document.getElementById(imgI), pdf = document.getElementById(pdfI);
                 if(file && file !== "-" && file !== "") {
                     box.style.display = 'block';
+                    const url = "jpgs/" + file;
                     const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(file);
-                    if(isImg) { 
-                        img.src = "jpgs/" + file; 
-                        img.style.display = 'block'; 
-                        pdf.style.display = 'none'; 
-                    } else { 
-                        pdf.src = "jpgs/" + file; 
-                        pdf.style.display = 'block'; 
-                        img.style.display = 'none'; 
-                    }
+                    if(isImg) { img.src=url; img.style.display='block'; pdf.style.display='none'; }
+                    else { pdf.src=url; pdf.style.display='block'; img.style.display='none'; }
                 } else { box.style.display = 'none'; }
             };
             setView(s.f1, 'box-f1', 'img-f1', 'pdf-f1');
