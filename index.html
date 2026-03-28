@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 안성여고 교육과정 박람회</title>
     <style>
-        :root { --primary: #1a73e8; --bg: #f8f9fa; --border: #e0e0e0; }
+        :root { --primary: #1a73e8; --bg: #f8f9fa; --border: #e0e0e0; --accent: #fbbc04; }
         * { box-sizing: border-box; }
         body { font-family: 'Pretendard', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; }
 
@@ -19,40 +19,40 @@
         .page-content { display: none; width: 100%; height: 100%; overflow: hidden; }
         .page-content.active { display: flex; }
 
-        /* 3컬럼 레이아웃 */
         .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
         .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid var(--border); color: #555; }
         .list-container { flex: 1; overflow-y: auto; }
         
-        #col-group { flex: 0 0 180px; } /* 교과군(A열) */
-        #col-subject { flex: 0 0 240px; background: #fafafa; } /* 과목명(B열) */
+        #col-group { flex: 0 0 170px; }
+        #col-subject { flex: 0 0 230px; background: #fafafa; }
         #col-detail { flex: 1; border-right: none; background: #f8f9fa; display: flex; flex-direction: column; }
 
-        .item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
         .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 5px solid var(--primary); }
 
-        /* 상세 정보 상단 보드 */
+        /* 상세 영역 상단 타이틀 (교과군/과목명 명시) */
+        .detail-title-bar { display: none; background: #fff; padding: 15px 20px; border-bottom: 1px solid var(--border); align-items: center; gap: 10px; }
+        .badge-group { background: #e8f0fe; color: var(--primary); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .subject-name-large { font-size: 1.2rem; font-weight: 800; color: #202124; }
+
         .info-board { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; background: white; border-bottom: 1px solid var(--border); }
         .info-item { display: flex; flex-direction: column; gap: 3px; border-left: 2px solid #eee; padding-left: 10px; }
         .info-label { font-size: 0.7rem; color: #999; font-weight: bold; }
         .info-value { font-size: 0.9rem; color: #333; font-weight: 600; }
         
-        /* 뷰어 영역 */
         #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }
         .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; }
         .viewer-label { color: #ccc; font-size: 0.75rem; margin-bottom: 8px; text-align: center; }
         .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .viewer-box iframe { width: 100%; height: 800px; border: none; background: white; }
 
-        /* 학기별 보기 */
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
-        #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; align-content: start; }
+        #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; align-content: start; }
         .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; min-height: 350px; }
-        .term-header { background: #444; color: white; padding: 12px; font-weight: bold; text-align: center; border-radius: 11px 11px 0 0; font-size: 0.9rem; }
+        .term-header { background: #444; color: white; padding: 12px; font-weight: bold; text-align: center; border-radius: 11px 11px 0 0; }
         .term-body { padding: 5px; flex: 1; }
         .term-subject { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.85rem; cursor: pointer; }
-        .term-subject:hover { background: #e8f0fe; color: var(--primary); font-weight: bold; }
 
         #loading { position: fixed; inset: 0; background: white; display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; gap: 10px; }
     </style>
@@ -73,23 +73,18 @@
     <main>
         <section id="page-home" class="page-content active">
             <h1 style="margin-top:100px;">2026 안성여고 교육과정 박람회</h1>
-            <p style="color:#666;">교과군을 선택하고 세부 과목의 정보를 확인하세요.</p>
-            <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px;">박람회 입장하기</button>
+            <button onclick="showPage('subject')" style="padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px;">박람회 입장하기</button>
         </section>
 
         <section id="page-subject" class="page-content">
-            <div class="column" id="col-group">
-                <div class="column-header">1. 교과군 선택</div>
-                <div id="group-list" class="list-container"></div>
-            </div>
-            <div class="column" id="col-subject">
-                <div class="column-header">2. 과목 선택</div>
-                <div id="subject-list" class="list-container">
-                    <p style="text-align:center; color:#ccc; margin-top:50px; font-size:0.8rem;">먼저 교과군을<br>선택하세요.</p>
-                </div>
-            </div>
+            <div class="column" id="col-group"><div class="column-header">교과군</div><div id="group-list" class="list-container"></div></div>
+            <div class="column" id="col-subject"><div class="column-header">과목 선택</div><div id="subject-list" class="list-container"></div></div>
             <div class="column" id="col-detail">
-                <div class="column-header">3. 상세 정보</div>
+                <div id="detail-title-bar" class="detail-title-bar">
+                    <span id="v-badge-group" class="badge-group">교과군</span>
+                    <span id="v-subject-name" class="subject-name-large">과목명</span>
+                </div>
+
                 <div id="info-board" class="info-board">
                     <div class="info-item"><div class="info-label">학년</div><div id="v-grade"></div></div>
                     <div class="info-item"><div class="info-label">학기</div><div id="v-term"></div></div>
@@ -134,45 +129,39 @@
                 rows.slice(1).forEach(row => {
                     const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, "").trim());
                     if (c.length < 2) return;
-                    
                     const gName = c[0]; 
                     if(!gName) return;
-
                     if(!grouped[gName]) grouped[gName] = { name: gName, subjects: [] };
                     grouped[gName].subjects.push({
-                        name: c[1] || "과목명 없음", 
-                        f1: c[2], f2: c[3], grade: c[4], term: c[5], entry: c[6],
+                        name: c[1], f1: c[2], f2: c[3], grade: c[4], term: c[5], entry: c[6],
                         type: c[7], sgroup: c[8], credit: c[9], note: c[10], gName: gName
                     });
                 });
-
                 db = Object.values(grouped);
                 if(db.length > 0) renderGroups();
                 document.getElementById('loading').style.display = 'none';
-            } catch (e) { 
-                console.error(e);
-                document.getElementById('loading').innerHTML = "데이터 연동 실패.";
-            }
+            } catch (e) { console.error(e); }
         }
 
         function renderGroups() {
-            document.getElementById('group-list').innerHTML = db.map((g, i) => 
-                `<div class="item ${curGIdx===i?'active':''}" onclick="selectGroup(${i})">${g.name}<span>❯</span></div>`
-            ).join('');
+            document.getElementById('group-list').innerHTML = db.map((g, i) => `<div class="item ${curGIdx===i?'active':''}" onclick="selectGroup(${i})">${g.name}<span>❯</span></div>`).join('');
         }
 
         function selectGroup(i) {
             curGIdx = i;
             renderGroups();
-            resetDetail(); // 이전 과목 상세정보 초기화
-            document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => 
-                `<div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`
-            ).join('');
+            resetDetail();
+            document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => `<div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`).join('');
         }
 
         function selectSubject(s, el) {
             document.querySelectorAll('#subject-list .item').forEach(i => i.classList.remove('active'));
             if(el) el.classList.add('active');
+
+            // ✅ 타이틀 바 업데이트 및 노출
+            document.getElementById('detail-title-bar').style.display = 'flex';
+            document.getElementById('v-badge-group').innerText = s.gName;
+            document.getElementById('v-subject-name').innerText = s.name;
 
             document.getElementById('empty-msg').style.display = 'none';
             document.getElementById('info-board').style.display = 'grid';
@@ -200,6 +189,7 @@
         }
 
         function resetDetail() {
+            document.getElementById('detail-title-bar').style.display = 'none';
             document.getElementById('info-board').style.display = 'none';
             document.getElementById('empty-msg').style.display = 'block';
             document.querySelectorAll('.viewer-box').forEach(b => b.style.display = 'none');
