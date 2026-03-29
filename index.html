@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>2026 안성여고 교육과정 박람회</title>
     <style>
         :root { 
@@ -33,7 +33,6 @@
         #col-detail { flex: 1; background: #f8f9fa; display: flex; flex-direction: column; }
 
         .item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
-        .item:hover { background: #f1f3f4; }
         .item.active { background: #e8f0fe; color: var(--primary); font-weight: bold; border-left: 5px solid var(--primary); }
 
         .detail-title-bar { display: none; background: #fff; padding: 15px 20px; border-bottom: 1px solid var(--border); align-items: center; gap: 10px; }
@@ -42,19 +41,24 @@
         .badge-3 { background: var(--grade3-main) !important; }
         .subject-name-large { font-size: 1.2rem; font-weight: 800; color: #202124; }
 
-        .info-board { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; border-bottom: 1px solid var(--border); transition: 0.3s; }
-        .info-item { display: flex; flex-direction: column; gap: 3px; padding-left: 10px; border-left: 2px solid rgba(0,0,0,0.1); }
+        .info-board { display: none; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; border-bottom: 1px solid var(--border); }
         .bg-grade2 { background-color: var(--grade2-bg) !important; }
-        .bg-grade2 .info-item { border-left-color: var(--grade2-main); }
         .bg-grade3 { background-color: var(--grade3-bg) !important; }
-        .bg-grade3 .info-item { border-left-color: var(--grade3-main); }
+        .info-item { display: flex; flex-direction: column; gap: 3px; padding-left: 10px; border-left: 2px solid rgba(0,0,0,0.1); }
 
-        .info-label { font-size: 0.7rem; color: #666; font-weight: bold; }
-        .info-value { font-size: 0.9rem; color: #333; font-weight: 600; }
-        
         #viewer-container { flex: 1; overflow-y: auto; background: #525659; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }
-        .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; }
-        .viewer-box img { width: 100%; height: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: block; margin: 0 auto; }
+        .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; cursor: zoom-in; position: relative; }
+        .viewer-box::after { content: '클릭하여 크게보기 🔍'; position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; }
+        .viewer-box img { width: 100%; height: auto; display: block; }
+
+        /* 🖼️ 라이트박스 (전체화면 뷰어) 스타일 */
+        #lightbox { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); z-index: 2000; 
+            display: none; justify-content: center; align-items: center; 
+            overflow: auto; cursor: zoom-out;
+        }
+        #lightbox img { max-width: 95%; height: auto; transition: transform 0.3s ease; }
 
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
         #page-term.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-content: start; }
@@ -65,7 +69,7 @@
         .term-body { padding: 0; flex: 1; overflow-y: auto; background: #fff; }
         .term-subject { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
 
-        #loading { position: fixed; inset: 0; background: white; display: flex; justify-content: center; align-items: center; z-index: 1000; flex-direction: column; gap: 10px; }
+        #loading { position: fixed; inset: 0; background: white; display: flex; justify-content: center; align-items: center; z-index: 3000; flex-direction: column; gap: 10px; }
         
         @media (max-width: 768px) {
             main { overflow-y: auto; -webkit-overflow-scrolling: touch; } 
@@ -81,7 +85,11 @@
 </head>
 <body>
 
-    <div id="loading"><b>데이터를 온전하게 불러오는 중입니다...</b></div>
+    <div id="loading"><b>고화질 자료를 최적화 중입니다...</b></div>
+
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="">
+    </div>
 
     <header>
         <div class="logo" onclick="showPage('home')">안성여고 교육과정 박람회</div>
@@ -94,7 +102,8 @@
 
     <main id="main-container">
         <section id="page-home" class="page-content active" style="flex-direction: column; justify-content: center; align-items: center; background: white; text-align: center; padding: 40px;">
-            <h1 style="font-size: 1.8rem; margin-bottom: 10px;">2026 안성여고 교육과정 박람회</h1>
+            <h1>2026 안성여고 교육과정 박람회</h1>
+            <p>안내 이미지를 클릭하면 전체화면으로 크게 볼 수 있습니다.</p>
             <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px; font-weight:bold;">입장하기</button>
         </section>
 
@@ -102,7 +111,7 @@
             <div class="column" id="col-group"><div class="column-header">1. 교과군 선택</div><div id="group-list" class="list-container"></div></div>
             <div class="column" id="col-subject"><div class="column-header" id="subject-header">2. 과목 선택</div><div id="subject-list" class="list-container"></div></div>
             <div class="column" id="col-detail">
-                <div class="column-header">3. 상세 정보</div>
+                <div class="column-header">3. 상세 정보 (이미지 클릭 시 확대)</div>
                 <div id="detail-title-bar" class="detail-title-bar">
                     <span id="v-badge-group" class="badge-group"></span>
                     <span id="v-subject-name" class="subject-name-large"></span>
@@ -118,8 +127,8 @@
                 </div>
                 <div id="viewer-container">
                     <div id="empty-msg" style="color:#aaa; margin-top:80px;">과목을 선택하면 안내 이미지가 나타납니다.</div>
-                    <div id="box-f1" class="viewer-box"><img id="img-f1" alt="자료1"></div>
-                    <div id="box-f2" class="viewer-box"><img id="img-f2" alt="자료2"></div>
+                    <div id="box-f1" class="viewer-box" onclick="openLightbox('img-f1')"><img id="img-f1"></div>
+                    <div id="box-f2" class="viewer-box" onclick="openLightbox('img-f2')"><img id="img-f2"></div>
                 </div>
             </div>
         </section>
@@ -129,9 +138,21 @@
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsBI-I1tIcnT0nuNa9BFcLaMzes4mIxE22VPLMGI0dFREjuifC-kvBYtNlpHaUyMCKCEHeTkwtRAKN/pub?gid=0&single=true&output=csv";
-        
         let db = [];
         let curGIdx = null;
+
+        // 🔍 라이트박스 열기
+        function openLightbox(imgId) {
+            const src = document.getElementById(imgId).src;
+            if(!src || src.includes('undefined')) return;
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        // 🔍 라이트박스 닫기
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
 
         function showPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
@@ -150,7 +171,6 @@
                 const grouped = {};
 
                 rows.slice(1).forEach(row => {
-                    // 🛠️ 파싱 로직 대폭 강화: 셀 내부의 공백과 쉼표를 정확히 처리하는 함수
                     const parseCSVRow = (str) => {
                         const result = [];
                         let current = "";
@@ -165,15 +185,10 @@
                         result.push(current.trim());
                         return result;
                     };
-
                     const cleanC = parseCSVRow(row);
                     if (cleanC.length < 2) return;
-                    
-                    const gName = cleanC[0]; 
-                    const sName = cleanC[1]; // "언어생활 탐구"가 잘리지 않음
-                    
+                    const gName = cleanC[0], sName = cleanC[1];
                     if(!gName || !sName) return;
-
                     if(!grouped[gName]) grouped[gName] = { name: gName, subjects: [] };
                     grouped[gName].subjects.push({
                         name: sName, f1: cleanC[2], f2: cleanC[3], 
@@ -182,7 +197,6 @@
                         note: cleanC[10], gName: gName
                     });
                 });
-
                 db = Object.values(grouped);
                 if(db.length > 0) renderGroups();
                 document.getElementById('loading').style.display = 'none';
@@ -195,10 +209,9 @@
 
         function selectGroup(i) {
             curGIdx = i;
-            const groupName = db[i].name;
             renderGroups();
             resetDetail();
-            document.getElementById('subject-header').innerText = `2. 과목 선택 (${groupName})`;
+            document.getElementById('subject-header').innerText = `2. 과목 선택 (${db[i].name})`;
             document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => `<div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`).join('');
             if (window.innerWidth <= 768) document.getElementById('col-subject').scrollIntoView({ behavior: 'smooth' });
         }
@@ -206,23 +219,16 @@
         function selectSubject(s, el) {
             document.querySelectorAll('#subject-list .item').forEach(i => i.classList.remove('active'));
             if(el) el.classList.add('active');
-
-            const titleBar = document.getElementById('detail-title-bar');
-            const badge = document.getElementById('v-badge-group');
-            const infoBoard = document.getElementById('info-board');
-            
+            const titleBar = document.getElementById('detail-title-bar'), badge = document.getElementById('v-badge-group'), infoBoard = document.getElementById('info-board');
             titleBar.style.display = 'flex';
             badge.innerText = s.gName;
             badge.className = 'badge-group'; 
             infoBoard.className = 'info-board';
-            
             if(String(s.grade).includes('2')) { badge.classList.add('badge-2'); infoBoard.classList.add('bg-grade2'); }
             else if(String(s.grade).includes('3')) { badge.classList.add('badge-3'); infoBoard.classList.add('bg-grade3'); }
-
             document.getElementById('v-subject-name').innerText = s.name;
             document.getElementById('empty-msg').style.display = 'none';
             infoBoard.style.display = 'grid';
-
             document.getElementById('v-grade').innerText = s.grade || "-";
             document.getElementById('v-term').innerText = s.term || "-";
             document.getElementById('v-entry').innerText = s.entry || "-";
@@ -230,7 +236,6 @@
             document.getElementById('v-sgroup').innerText = s.sgroup || "-";
             document.getElementById('v-credit').innerText = s.credit || "-";
             document.getElementById('v-note').innerText = s.note || "-";
-
             const setImgViewer = (file, boxI, imgI) => {
                 const box = document.getElementById(boxI), img = document.getElementById(imgI);
                 if(file && file !== "-" && file !== "") {
@@ -248,7 +253,6 @@
             document.getElementById('info-board').style.display = 'none';
             document.getElementById('empty-msg').style.display = 'block';
             document.querySelectorAll('.viewer-box').forEach(b => b.style.display = 'none');
-            document.querySelectorAll('.viewer-box img').forEach(img => img.src = "");
         }
 
         function renderTerm() {
@@ -267,7 +271,6 @@
             const gi = db.findIndex(g => g.name === gn);
             if(gi > -1) { selectGroup(gi); const sObj = db[gi].subjects.find(s => s.name === sn); if(sObj) selectSubject(sObj, null); }
         }
-
         init();
     </script>
 </body>
