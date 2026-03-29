@@ -10,19 +10,12 @@
             --grade2-main: #1a73e8; --grade2-bg: #e8f0fe; 
             --grade3-main: #34a853; --grade3-bg: #e6f4ea; 
         }
-
-        /* 📱 브라우저 자동 글자 크기 조절 방지 */
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            font-family: 'Pretendard', sans-serif; margin: 0; display: flex; 
-            flex-direction: column; height: 100vh; background: var(--bg); 
-            overflow: hidden; width: 100%;
-        }
+        body { font-family: 'Pretendard', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background: var(--bg); overflow: hidden; width: 100%; }
 
-        /* --- UI 구성 요소 --- */
-        header { background: var(--primary); color: white; padding: 10px 10px 0 10px; flex-shrink: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* 헤더 & 네비게이션 */
+        header { background: var(--primary); color: white; padding: 10px 15px 0 15px; flex-shrink: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo { font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; cursor: pointer; }
         .nav-tabs { display: flex; gap: 5px; list-style: none; margin: 0; padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .nav-tabs li { font-size: 0.9rem; cursor: pointer; padding: 12px 20px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.1); transition: 0.3s; white-space: nowrap; }
@@ -32,11 +25,10 @@
         .page-content { display: none; width: 100%; height: 100%; overflow: hidden; }
         .page-content.active { display: flex; }
 
-        /* --- 컬럼 레이아웃 (PC & 태블릿 가로) --- */
+        /* 레이아웃 컬럼 */
         .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
         .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid var(--border); color: #555; }
         .list-container { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        
         #col-group { flex: 0 0 160px; }
         #col-subject { flex: 0 0 200px; background: #fafafa; }
         #col-detail { flex: 1; background: #f8f9fa; display: flex; flex-direction: column; }
@@ -44,7 +36,7 @@
         .item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
         .item.active { background: #e8f0fe !important; color: var(--primary) !important; font-weight: bold; border-left: 5px solid var(--primary); }
 
-        /* --- 상세 정보창 --- */
+        /* 상세 정보 섹션 */
         .detail-title-bar { display: none; background: #fff; padding: 15px 20px; border-bottom: 1px solid var(--border); align-items: center; gap: 10px; }
         .badge-group { color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
         .badge-2 { background: var(--grade2-main); }
@@ -61,21 +53,21 @@
         .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; cursor: pointer; }
         .viewer-box img { width: 100%; height: auto; display: block; }
 
-        /* --- 라이트박스 --- */
+        /* 라이트박스 */
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; overflow-y: auto; cursor: pointer; }
         #lightbox img { display: block; width: 95%; max-width: 1100px; height: auto; margin: 40px auto; }
 
-        /* --- 학기별 보기 (모바일 격자 유지) --- */
+        /* 학기별 보기 격자 */
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
         #page-term.active { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-content: start; }
-        .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; height: 350px; overflow: hidden; }
+        .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; height: 350px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .term-header { color: white; padding: 12px 5px; font-weight: bold; text-align: center; font-size: 0.85rem; }
         .header-2 { background: var(--grade2-main); }
         .header-3 { background: var(--grade3-main); }
-        .term-body { padding: 0; flex: 1; overflow-y: auto; background: #fff; }
+        .term-body { padding: 0; flex: 1; overflow-y: auto; background: #fff; -webkit-overflow-scrolling: touch; }
         .term-subject { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.8rem; cursor: pointer; line-height: 1.3; word-break: keep-all; }
 
-        /* --- 📱 기기별 반응형 조정 --- */
+        /* 반응형 쿼리 */
         @media (max-width: 768px) {
             .page-content.active { flex-direction: column; overflow-y: auto; }
             .column { width: 100%; flex: none; border-right: none; border-bottom: 1px solid var(--border); }
@@ -98,6 +90,7 @@
 
     <div id="lightbox" onclick="closeLightbox()">
         <img id="lightbox-img" src="">
+        <div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); color:white; background:rgba(0,0,0,0.6); padding:8px 20px; border-radius:20px; font-size:0.8rem; pointer-events:none; white-space:nowrap;">클릭: 닫기</div>
     </div>
 
     <header>
@@ -118,7 +111,7 @@
             
             <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 40px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
                 <h1 style="font-size:2.2rem; margin-bottom:15px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-weight: 900;">2026 안성여고<br>교육과정 박람회</h1>
-                <p style="font-size: 1.1rem; line-height:1.7; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">"나만의 꿈을 설계하는 시간"</p>
+                <p style="font-size: 1.1rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">나만의 꿈을 설계하는 시간</p>
                 <button onclick="showPage('subject')" style="margin-top:35px; padding:18px 55px; background: white; color: var(--primary); border:none; border-radius:35px; font-weight:900; font-size: 1.1rem; cursor:pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">박람회 입장하기</button>
             </div>
         </section>
@@ -208,10 +201,8 @@
             document.getElementById('box-f1').style.display = 'none';
             document.getElementById('box-f2').style.display = 'none';
             document.getElementById('empty-msg').style.display = 'block';
-
             document.querySelectorAll('.group-item').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.group-item')[i].classList.add('active');
-
             document.getElementById('subject-header').innerText = `2. 과목 선택 (${db[i].name})`;
             document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => `<div class="item subject-item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`).join('');
             if(window.innerWidth <= 768) document.getElementById('col-subject').scrollIntoView({behavior:'smooth'});
@@ -220,12 +211,10 @@
         function selectSubject(s, el) {
             document.querySelectorAll('.subject-item').forEach(i => i.classList.remove('active')); 
             if(el) el.classList.add('active');
-
             document.querySelectorAll('.group-item').forEach(gEl => {
                 if(gEl.getAttribute('data-name') === s.gName) gEl.classList.add('active');
                 else gEl.classList.remove('active');
             });
-
             document.getElementById('detail-title-bar').style.display = 'flex';
             const badge = document.getElementById('v-badge-group');
             badge.innerText = s.gName; badge.className = 'badge-group ' + (String(s.grade).includes('2') ? 'badge-2' : 'badge-3');
@@ -265,22 +254,16 @@
         }
         init();
 
-        // 📱 화면 회전 시 '무조건 초기 배율(1.0)'로 강력 리셋 로직
+        // 📱 화면 회전 강력 리셋 로직 (가로/세로 변경 시 배율 1.0 초기화)
         window.addEventListener('orientationchange', function() {
             const vp = document.getElementById('viewport');
-            
-            // 1. 배율을 1.0으로 강제 고정 (수동 확대 무시)
             vp.content = "width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0";
-            
-            // 2. 브라우저가 레이아웃을 다시 그릴 수 있도록 잠시 숨김
             document.body.style.display = 'none';
-
             setTimeout(function() {
-                // 3. 배율 설정을 다시 원래(수동 확대 가능)대로 복구
                 vp.content = "width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0";
                 document.body.style.display = 'flex';
-                window.scrollTo(0, 0); // 스크롤 위치 초기화
-            }, 200);
+                window.scrollTo(0, 0);
+            }, 250);
         });
     </script>
 </body>
