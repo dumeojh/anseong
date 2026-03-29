@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
     <title>2026 안성여고 교육과정 박람회</title>
     <style>
         :root { 
@@ -11,31 +11,20 @@
             --grade3-main: #34a853; --grade3-bg: #e6f4ea; 
         }
 
-        /* 📱 핵심 수정: 화면 회전 시 브라우저의 글자 크기 자동 확장을 원천 차단 */
-        html { 
-            -webkit-text-size-adjust: 100%; 
-            -moz-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
-            text-size-adjust: 100%; 
-        }
-
+        /* 📱 브라우저 자동 글자 크기 조절 방지 */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            font-family: 'Pretendard', sans-serif; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            background: var(--bg); 
-            overflow: hidden; 
-            width: 100%;
+            font-family: 'Pretendard', sans-serif; margin: 0; display: flex; 
+            flex-direction: column; height: 100vh; background: var(--bg); 
+            overflow: hidden; width: 100%;
         }
 
-        /* 헤더 */
+        /* --- UI 구성 요소 --- */
         header { background: var(--primary); color: white; padding: 10px 10px 0 10px; flex-shrink: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo { font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; cursor: pointer; }
-        .nav-tabs { display: flex; gap: 5px; list-style: none; margin: 0; padding: 0; overflow-x: auto; }
+        .nav-tabs { display: flex; gap: 5px; list-style: none; margin: 0; padding: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .nav-tabs li { font-size: 0.9rem; cursor: pointer; padding: 12px 20px; border-radius: 8px 8px 0 0; background: rgba(255,255,255,0.1); transition: 0.3s; white-space: nowrap; }
         .nav-tabs li.active { background: white; color: var(--primary); font-weight: bold; }
 
@@ -43,10 +32,11 @@
         .page-content { display: none; width: 100%; height: 100%; overflow: hidden; }
         .page-content.active { display: flex; }
 
-        /* 컬럼 설정 */
+        /* --- 컬럼 레이아웃 (PC & 태블릿 가로) --- */
         .column { display: flex; flex-direction: column; background: white; border-right: 1px solid var(--border); }
         .column-header { background: #f1f3f4; padding: 15px; font-weight: bold; font-size: 0.85rem; border-bottom: 1px solid var(--border); color: #555; }
         .list-container { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        
         #col-group { flex: 0 0 160px; }
         #col-subject { flex: 0 0 200px; background: #fafafa; }
         #col-detail { flex: 1; background: #f8f9fa; display: flex; flex-direction: column; }
@@ -54,7 +44,7 @@
         .item { padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
         .item.active { background: #e8f0fe !important; color: var(--primary) !important; font-weight: bold; border-left: 5px solid var(--primary); }
 
-        /* 상세 정보 */
+        /* --- 상세 정보창 --- */
         .detail-title-bar { display: none; background: #fff; padding: 15px 20px; border-bottom: 1px solid var(--border); align-items: center; gap: 10px; }
         .badge-group { color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
         .badge-2 { background: var(--grade2-main); }
@@ -71,11 +61,11 @@
         .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; cursor: pointer; }
         .viewer-box img { width: 100%; height: auto; display: block; }
 
-        /* 라이트박스 */
+        /* --- 라이트박스 --- */
         #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; overflow-y: auto; cursor: pointer; }
         #lightbox img { display: block; width: 95%; max-width: 1100px; height: auto; margin: 40px auto; }
 
-        /* 학기별 보기 격자 */
+        /* --- 학기별 보기 (모바일 격자 유지) --- */
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
         #page-term.active { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-content: start; }
         .term-card { background: white; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; height: 350px; overflow: hidden; }
@@ -83,9 +73,9 @@
         .header-2 { background: var(--grade2-main); }
         .header-3 { background: var(--grade3-main); }
         .term-body { padding: 0; flex: 1; overflow-y: auto; background: #fff; }
-        .term-subject { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.8rem; cursor: pointer; line-height: 1.3; }
+        .term-subject { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; font-size: 0.8rem; cursor: pointer; line-height: 1.3; word-break: keep-all; }
 
-        /* 모바일 대응 */
+        /* --- 📱 기기별 반응형 조정 --- */
         @media (max-width: 768px) {
             .page-content.active { flex-direction: column; overflow-y: auto; }
             .column { width: 100%; flex: none; border-right: none; border-bottom: 1px solid var(--border); }
@@ -93,6 +83,10 @@
             .info-board { grid-template-columns: repeat(2, 1fr); }
             #page-term.active { grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 10px; }
             .term-card { height: 300px; }
+        }
+        @media (min-width: 1024px) {
+            #page-term.active { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+            .term-card { height: calc(100vh - 160px); }
         }
 
         #loading { position:fixed; inset:0; background:white; z-index:3000; display:flex; align-items:center; justify-content:center; }
@@ -122,9 +116,10 @@
                                url('http://googleusercontent.com/image_collection/image_retrieval/10095993917855746592_0');
                    background-size: cover; background-position: center; text-align:center; padding:20px; color: white;">
             
-            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); padding: 40px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2);">
-                <h1 style="font-size:2.2rem; margin-bottom:15px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">2026 안성여고<br>교육과정 박람회</h1>
-                <button onclick="showPage('subject')" style="margin-top:35px; padding:18px 55px; background: white; color: var(--primary); border:none; border-radius:35px; font-weight:900; font-size: 1.1rem; cursor:pointer;">박람회 입장하기</button>
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 40px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+                <h1 style="font-size:2.2rem; margin-bottom:15px; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-weight: 900;">2026 안성여고<br>교육과정 박람회</h1>
+                <p style="font-size: 1.1rem; line-height:1.7; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">"나만의 꿈을 설계하는 시간"</p>
+                <button onclick="showPage('subject')" style="margin-top:35px; padding:18px 55px; background: white; color: var(--primary); border:none; border-radius:35px; font-weight:900; font-size: 1.1rem; cursor:pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">박람회 입장하기</button>
             </div>
         </section>
 
@@ -141,7 +136,7 @@
                     <div class="info-item"><div class="info-label">학년</div><div id="v-grade"></div></div>
                     <div class="info-item"><div class="info-label">학기</div><div id="v-term"></div></div>
                     <div class="info-item"><div class="info-label">입학생기준</div><div id="v-entry"></div></div>
-                    <div class="info-item"><div class="info-label">유형</div><div id="v-type"></div></div>
+                    <div class="info-item"><div class="info-label">선택유형</div><div id="v-type"></div></div>
                     <div class="info-item"><div class="info-label">학점</div><div id="v-credit"></div></div>
                     <div class="info-item" style="grid-column: span 2;"><div class="info-label">비고</div><div id="v-note"></div></div>
                 </div>
@@ -159,12 +154,12 @@
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsBI-I1tIcnT0nuNa9BFcLaMzes4mIxE22VPLMGI0dFREjuifC-kvBYtNlpHaUyMCKCEHeTkwtRAKN/pub?gid=0&single=true&output=csv";
         let db = [];
 
-        // 🔍 라이트박스
         function openLightbox(imgId) {
             const src = document.getElementById(imgId).src;
             if(!src || src.includes('undefined')) return;
             document.getElementById('lightbox-img').src = src;
             document.getElementById('lightbox').style.display = 'block';
+            document.getElementById('lightbox').scrollTop = 0;
         }
         function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
 
@@ -208,7 +203,6 @@
         }
         
         function selectGroup(i) {
-            // 상세 정보 클리어
             document.getElementById('detail-title-bar').style.display = 'none';
             document.getElementById('info-board').style.display = 'none';
             document.getElementById('box-f1').style.display = 'none';
@@ -226,6 +220,11 @@
         function selectSubject(s, el) {
             document.querySelectorAll('.subject-item').forEach(i => i.classList.remove('active')); 
             if(el) el.classList.add('active');
+
+            document.querySelectorAll('.group-item').forEach(gEl => {
+                if(gEl.getAttribute('data-name') === s.gName) gEl.classList.add('active');
+                else gEl.classList.remove('active');
+            });
 
             document.getElementById('detail-title-bar').style.display = 'flex';
             const badge = document.getElementById('v-badge-group');
@@ -266,14 +265,22 @@
         }
         init();
 
-        // 📱 화면 회전 시 브라우저 레이아웃 강제 재계산
+        // 📱 화면 회전 시 '무조건 초기 배율(1.0)'로 강력 리셋 로직
         window.addEventListener('orientationchange', function() {
-            // 글자 크기가 고정되도록 강제로 초기화
+            const vp = document.getElementById('viewport');
+            
+            // 1. 배율을 1.0으로 강제 고정 (수동 확대 무시)
+            vp.content = "width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0";
+            
+            // 2. 브라우저가 레이아웃을 다시 그릴 수 있도록 잠시 숨김
             document.body.style.display = 'none';
+
             setTimeout(function() {
+                // 3. 배율 설정을 다시 원래(수동 확대 가능)대로 복구
+                vp.content = "width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0";
                 document.body.style.display = 'flex';
                 window.scrollTo(0, 0); // 스크롤 위치 초기화
-            }, 50);
+            }, 200);
         });
     </script>
 </body>
