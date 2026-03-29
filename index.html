@@ -49,22 +49,24 @@
         .viewer-box { width: 100%; max-width: 850px; display: none; background: #444; padding: 10px; border-radius: 4px; cursor: zoom-in; }
         .viewer-box img { width: 100%; height: auto; display: block; }
 
-        /* 🖼️ 라이트박스 (사용자님 요청 방식 적용) */
+        /* 🖼️ 라이트박스 수정: 전체화면 스크롤 방식 */
         #lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.95); z-index: 2000; 
-            display: none; justify-content: center; align-items: center; 
-            overflow: hidden; cursor: pointer; /* 클릭하면 닫힘 안내 */
+            display: none; overflow-y: auto; /* 세로 스크롤 가능하게 변경 */
+            cursor: pointer;
         }
         #lightbox img { 
-            max-width: 90%; max-height: 90%; 
-            object-fit: contain;
-            transition: transform 0.1s ease-out;
-            will-change: transform;
+            display: block;
+            width: 95%; /* 화면 너비에 맞춤 */
+            max-width: 1100px; /* PC에서 너무 퍼지지 않게 제한 */
+            height: auto;
+            margin: 40px auto; /* 상하 여백 생성 */
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
-
         #zoom-guide-pc {
-            position: absolute; bottom: 20px; color: white; background: rgba(0,0,0,0.6);
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            color: white; background: rgba(0,0,0,0.7);
             padding: 8px 20px; border-radius: 20px; font-size: 0.85rem; pointer-events: none;
         }
 
@@ -87,9 +89,9 @@
 
     <div id="loading" style="position:fixed; inset:0; background:white; z-index:3000; display:flex; align-items:center; justify-content:center;"><b>로딩 중...</b></div>
 
-    <div id="lightbox" onclick="closeLightbox()" onwheel="handleWheel(event)">
-        <img id="lightbox-img" src="" onmousemove="handleMove(event)">
-        <div id="zoom-guide-pc">휠: 확대/축소 | 클릭: 원래대로 돌아가기</div>
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="">
+        <div id="zoom-guide-pc">마우스 휠: 상하 스크롤 | 클릭: 원래대로 돌아가기</div>
     </div>
 
     <header>
@@ -104,7 +106,7 @@
     <main id="main-container">
         <section id="page-home" class="page-content active" style="flex-direction:column; justify-content:center; align-items:center; background:white; text-align:center;">
             <h1>2026 안성여고 교육과정 박람회</h1>
-            <p>안내 자료를 클릭하여 크게 보고 마우스 휠로 확대하세요.</p>
+            <p>안내 자료를 클릭하여 크게 보고 마우스 휠로 스크롤하세요.</p>
             <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; background:var(--primary); color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">입장하기</button>
         </section>
 
@@ -138,40 +140,21 @@
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsBI-I1tIcnT0nuNa9BFcLaMzes4mIxE22VPLMGI0dFREjuifC-kvBYtNlpHaUyMCKCEHeTkwtRAKN/pub?gid=0&single=true&output=csv";
-        let db = [], scale = 1;
+        let db = [];
 
-        // 🔍 라이트박스 열기
+        // 🔍 라이트박스 열기 (단순화 버전)
         function openLightbox(imgId) {
             const src = document.getElementById(imgId).src;
             if(!src || src.includes('undefined')) return;
             const lbImg = document.getElementById('lightbox-img');
-            lbImg.src = src; scale = 1; updateImg();
-            document.getElementById('lightbox').style.display = 'flex';
+            lbImg.src = src;
+            document.getElementById('lightbox').style.display = 'block';
+            document.getElementById('lightbox').scrollTop = 0; // 최상단으로 스크롤 초기화
         }
 
-        // 🔍 라이트박스 닫기 (클릭 시)
-        function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
-
-        // 🔍 마우스 휠 확대/축소
-        function handleWheel(e) {
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? -0.2 : 0.2;
-            scale = Math.min(Math.max(1, scale + delta), 5);
-            updateImg();
-        }
-
-        // 🔍 마우스 위치 추적
-        function handleMove(e) {
-            if (scale === 1) return;
-            const img = document.getElementById('lightbox-img'), container = document.getElementById('lightbox');
-            const x = (e.clientX / container.offsetWidth) * 100, y = (e.clientY / container.offsetHeight) * 100;
-            img.style.transformOrigin = `${x}% ${y}%`;
-        }
-
-        function updateImg() {
-            const img = document.getElementById('lightbox-img');
-            img.style.transform = `scale(${scale})`;
-            img.style.cursor = scale > 1 ? "move" : "zoom-out";
+        // 🔍 라이트박스 닫기
+        function closeLightbox() { 
+            document.getElementById('lightbox').style.display = 'none'; 
         }
 
         function showPage(id) {
@@ -210,24 +193,35 @@
         }
 
         function renderGroups() { document.getElementById('group-list').innerHTML = db.map((g, i) => `<div class="item" onclick="selectGroup(${i})">${g.name}<span>❯</span></div>`).join(''); }
+        
         function selectGroup(i) {
             document.getElementById('subject-header').innerText = `2. 과목 선택 (${db[i].name})`;
             document.getElementById('subject-list').innerHTML = db[i].subjects.map(s => `<div class="item" onclick='selectSubject(${JSON.stringify(s).replace(/'/g, "&apos;")}, this)'>${s.name}<span>❯</span></div>`).join('');
         }
+
         function selectSubject(s, el) {
-            document.querySelectorAll('#subject-list .item').forEach(i => i.classList.remove('active')); el.classList.add('active');
+            if(el) {
+                document.querySelectorAll('#subject-list .item').forEach(i => i.classList.remove('active')); 
+                el.classList.add('active');
+            }
             document.getElementById('detail-title-bar').style.display = 'flex';
             const badge = document.getElementById('v-badge-group');
-            badge.innerText = s.gName; badge.className = 'badge-group ' + (String(s.grade).includes('2') ? 'badge-2' : 'badge-3');
+            badge.innerText = s.gName; 
+            badge.className = 'badge-group ' + (String(s.grade).includes('2') ? 'badge-2' : 'badge-3');
             const infoBoard = document.getElementById('info-board');
             infoBoard.className = 'info-board ' + (String(s.grade).includes('2') ? 'bg-grade2' : 'bg-grade3');
             infoBoard.style.display = 'grid';
             document.getElementById('v-subject-name').innerText = s.name;
             document.getElementById('empty-msg').style.display = 'none';
             ['grade','term','entry','type','sgroup','credit','note'].forEach(k => document.getElementById('v-'+k).innerText = s[k] || "-");
-            const setImg = (f, b, i) => { const box = document.getElementById(b), img = document.getElementById(i); if(f && f !== "-") { box.style.display = 'block'; img.src = "jpgs/" + f; } else { box.style.display = 'none'; } };
+            const setImg = (f, b, i) => { 
+                const box = document.getElementById(b), img = document.getElementById(i); 
+                if(f && f !== "-") { box.style.display = 'block'; img.src = "jpgs/" + f; } 
+                else { box.style.display = 'none'; } 
+            };
             setImg(s.f1, 'box-f1', 'img-f1'); setImg(s.f2, 'box-f2', 'img-f2');
         }
+
         function renderTerm() {
             const layout = [{g:'2', t:'1', l:'2학년 1학기', c:'header-2'}, {g:'2', t:'2', l:'2학년 2학기', c:'header-2'}, {g:'3', t:'1', l:'3학년 1학기', c:'header-3'}, {g:'3', t:'2', l:'3학년 2학기', c:'header-3'}];
             document.getElementById('page-term').innerHTML = layout.map(lt => {
@@ -235,7 +229,21 @@
                 return `<div class="term-card"><div class="term-header ${lt.c}">${lt.l}</div><div class="term-body">${subs.map(s => `<div class="term-subject" onclick="jump('${s.gName}', '${s.name}')">${s.name}</div>`).join('')}</div></div>`;
             }).join('');
         }
-        function jump(gn, sn) { showPage('subject'); const gi = db.findIndex(g => g.name === gn); if(gi > -1) { selectGroup(gi); const sObj = db[gi].subjects.find(s => s.name === sn); if(sObj) selectSubject(sObj, null); } }
+
+        function jump(gn, sn) { 
+            showPage('subject'); 
+            const gi = db.findIndex(g => g.name === gn); 
+            if(gi > -1) { 
+                selectGroup(gi); 
+                const sObj = db[gi].subjects.find(s => s.name === sn); 
+                if(sObj) {
+                    setTimeout(() => {
+                        const items = document.querySelectorAll('#subject-list .item');
+                        items.forEach(item => { if(item.innerText.includes(sn)) selectSubject(sObj, item); });
+                    }, 50);
+                }
+            } 
+        }
         init();
     </script>
 </body>
