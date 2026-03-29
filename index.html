@@ -51,17 +51,33 @@
         .viewer-box img { width: 100%; height: auto; display: block; }
         .zoom-guide { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; font-size: 0.7rem; padding: 5px 10px; border-radius: 20px; pointer-events: none; }
 
-        /* 🖼️ 라이트박스 (클릭 시 원상복구) */
+        /* 🖼️ 라이트박스 (PC 스마트 확대 기능 추가) */
         #lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.95); z-index: 2000; 
+            background: rgba(0,0,0,0.9); z-index: 2000; 
             display: none; justify-content: center; align-items: center; 
-            cursor: zoom-out; /* 돋보기 마이너스 아이콘 */
+            overflow: hidden; /* 확대 시 스크롤 대신 이미지 이동 */
         }
         #lightbox img { 
-            max-width: 100%; max-height: 100%; 
-            object-fit: contain; /* 이미지 전체가 다 보이도록 조절 */
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 90%; max-height: 90%; 
+            object-fit: contain;
+            cursor: zoom-in;
+            transition: transform 0.2s ease-out, max-width 0.2s, max-height 0.2s;
+            user-select: none;
+        }
+        /* 확대된 상태의 이미지 클래스 */
+        #lightbox img.zoomed {
+            max-width: none;
+            max-height: none;
+            transform: scale(2); /* 2배 확대 */
+            cursor: zoom-out;
+            position: absolute;
+        }
+
+        #lightbox-close {
+            position: absolute; top: 20px; right: 20px; color: white;
+            font-size: 2rem; cursor: pointer; z-index: 2001; background: rgba(0,0,0,0.3);
+            width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
         }
 
         #page-term { background: #f0f2f5; padding: 20px; overflow-y: auto; display: none; }
@@ -76,14 +92,12 @@
         #loading { position: fixed; inset: 0; background: white; display: flex; justify-content: center; align-items: center; z-index: 3000; flex-direction: column; gap: 10px; }
         
         @media (max-width: 768px) {
-            main { overflow-y: auto; -webkit-overflow-scrolling: touch; } 
-            .page-content.active { flex-direction: column; height: auto; overflow: visible; }
-            .column { width: 100%; flex: none; border-right: none; border-bottom: 1px solid var(--border); }
-            .list-container { max-height: 350px; } 
-            #col-detail { min-height: 600px; }
+            main { overflow-y: auto; } 
+            .page-content.active { flex-direction: column; height: auto; }
+            .column { width: 100%; flex: none; }
             #page-term.active { grid-template-columns: 1fr; }
             .term-card { height: 500px; }
-            .info-board { grid-template-columns: 1fr 1fr; }
+            #lightbox img.zoomed { transform: scale(1.5); } /* 모바일은 1.5배만 */
         }
     </style>
 </head>
@@ -91,9 +105,10 @@
 
     <div id="loading"><b>박람회 시스템 로딩 중...</b></div>
 
-    <div id="lightbox" onclick="closeLightbox()">
-        <img id="lightbox-img" src="">
-        <div style="position: absolute; bottom: 20px; color: white; font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px;">화면을 터치하면 돌아갑니다</div>
+    <div id="lightbox">
+        <div id="lightbox-close" onclick="closeLightbox()">&times;</div>
+        <img id="lightbox-img" src="" onclick="toggleZoom(event)" onmousemove="moveZoom(event)">
+        <div id="zoom-msg" style="position: absolute; bottom: 20px; color: white; font-size: 0.8rem; pointer-events: none; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px;">클릭하여 확대/축소 (마우스로 이동)</div>
     </div>
 
     <header>
@@ -108,7 +123,7 @@
     <main id="main-container">
         <section id="page-home" class="page-content active" style="flex-direction: column; justify-content: center; align-items: center; background: white; text-align: center; padding: 40px;">
             <h1>2026 안성여고 교육과정 박람회</h1>
-            <p>안내 자료를 터치하여 크게 보고, 다시 터치하여 돌아오세요.</p>
+            <p>안내 자료를 클릭하여 크게 보고, 마우스로 상세히 확대하세요.</p>
             <button onclick="showPage('subject')" style="margin-top:20px; padding:15px 30px; cursor:pointer; background:var(--primary); color:white; border:none; border-radius:5px; font-weight:bold;">입장하기</button>
         </section>
 
@@ -134,11 +149,11 @@
                     <div id="empty-msg" style="color:#aaa; margin-top:80px;">과목을 선택하면 안내 이미지가 나타납니다.</div>
                     <div id="box-f1" class="viewer-box" onclick="openLightbox('img-f1')">
                         <img id="img-f1">
-                        <div class="zoom-guide">터치하여 확대 🔍</div>
+                        <div class="zoom-guide">클릭하여 확대 🔍</div>
                     </div>
                     <div id="box-f2" class="viewer-box" onclick="openLightbox('img-f2')">
                         <img id="img-f2">
-                        <div class="zoom-guide">터치하여 확대 🔍</div>
+                        <div class="zoom-guide">클릭하여 확대 🔍</div>
                     </div>
                 </div>
             </div>
@@ -151,18 +166,61 @@
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSsBI-I1tIcnT0nuNa9BFcLaMzes4mIxE22VPLMGI0dFREjuifC-kvBYtNlpHaUyMCKCEHeTkwtRAKN/pub?gid=0&single=true&output=csv";
         let db = [];
         let curGIdx = null;
+        let isZoomed = false;
 
         // 🔍 라이트박스 열기
         function openLightbox(imgId) {
             const src = document.getElementById(imgId).src;
             if(!src || src.includes('undefined') || src === "") return;
-            document.getElementById('lightbox-img').src = src;
+            const lbImg = document.getElementById('lightbox-img');
+            lbImg.src = src;
+            lbImg.className = ""; // 확대 상태 초기화
+            lbImg.style.transform = "";
+            lbImg.style.left = "";
+            lbImg.style.top = "";
+            isZoomed = false;
             document.getElementById('lightbox').style.display = 'flex';
+            document.getElementById('zoom-msg').innerText = "클릭하여 확대 (마우스로 이동)";
         }
 
-        // 🔍 라이트박스 닫기 (클릭 시 원상태 복귀)
+        // 🔍 라이트박스 닫기
         function closeLightbox() {
             document.getElementById('lightbox').style.display = 'none';
+        }
+
+        // 🔍 클릭 시 확대/축소 토글
+        function toggleZoom(e) {
+            e.stopPropagation();
+            const img = document.getElementById('lightbox-img');
+            isZoomed = !isZoomed;
+            if (isZoomed) {
+                img.classList.add('zoomed');
+                document.getElementById('zoom-msg').innerText = "다시 클릭하면 축소됩니다";
+                moveZoom(e); // 클릭한 위치로 즉시 이동
+            } else {
+                img.classList.remove('zoomed');
+                img.style.left = "";
+                img.style.top = "";
+                document.getElementById('zoom-msg').innerText = "클릭하여 확대 (마우스로 이동)";
+            }
+        }
+
+        // 🔍 확대 상태에서 마우스 위치에 따라 이미지 이동
+        function moveZoom(e) {
+            if (!isZoomed) return;
+            const img = document.getElementById('lightbox-img');
+            const container = document.getElementById('lightbox');
+            
+            // 마우스 위치 비율 계산
+            const x = e.clientX / container.offsetWidth;
+            const y = e.clientY / container.offsetHeight;
+            
+            // 이미지 위치 이동 (중심점 기준 보정)
+            const moveX = (container.offsetWidth / 2) - (img.offsetWidth * x * 2) + (img.offsetWidth / 2);
+            const moveY = (container.offsetHeight / 2) - (img.offsetHeight * y * 2) + (img.offsetHeight / 2);
+            
+            img.style.left = moveX + "px";
+            img.style.top = moveY + "px";
         }
 
         function showPage(id) {
